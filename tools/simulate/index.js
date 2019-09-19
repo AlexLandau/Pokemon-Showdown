@@ -120,6 +120,7 @@ case 'exhaustive':
 		} else {
 			formats = ExhaustiveRunner.FORMATS;
 		}
+		console.log("formats: " + JSON.stringify(formats));
 		let cycles = Number(argv._[1] || argv.cycles) || ExhaustiveRunner.DEFAULT_CYCLES;
 		let forever = argv.forever;
 		if (cycles < 0) {
