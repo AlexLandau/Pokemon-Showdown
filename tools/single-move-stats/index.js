@@ -31,7 +31,8 @@
 
 const child_process = require('child_process');
 const path = require('path');
-const shell = cmd => child_process.execSync(cmd, {stdio: 'inherit', cwd: path.resolve(__dirname, '../..')});
+// const shell = cmd => child_process.execSync(cmd, {stdio: 'inherit', cwd: path.resolve(__dirname, '../..')});
+
 // shell('node build');
 
 // const Dex = require('../../.sim-dist/dex').Dex;
@@ -52,7 +53,7 @@ const shell = cmd => child_process.execSync(cmd, {stdio: 'inherit', cwd: path.re
 // // console.log("bulba: " + JSON.stringify(Dex.getId("bulbasaur")));
 // console.log("Data: " + Object.keys(Dex.Data));
 
-require('../../.sim-dist/tools/pickrandom');
+require('../../.sim-dist/tools/collect-single-move-stats');
 
 // Can we start by just picking a random gen-1 Pokemon? Then picking a random move it can learn in gen 1?
 
