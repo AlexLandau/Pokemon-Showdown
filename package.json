@@ -30,7 +30,6 @@
   },
   "husky": {
     "hooks": {
-      "pre-push": "eslint --cache ."
     }
   },
   "bin": "./pokemon-showdown",
