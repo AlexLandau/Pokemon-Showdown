@@ -228,8 +228,6 @@ export function collectBattleData() {
 	}
 }
 
-const PROCESSES_TO_USE = 2;
-
 export function collectBattleDataMultiProcess() {
 	// Get a list of all pokemon/move combinations
 	const combos: [string, string][] = [];
@@ -239,7 +237,9 @@ export function collectBattleDataMultiProcess() {
 		}
 	}
 
-	let spareThreads: number = PROCESSES_TO_USE;
+	const NUM_WORKERS: number = process.env.NUM_WORKERS ? parseInt(process.env.NUM_WORKERS) : 2;
+
+	let spareThreads: number = NUM_WORKERS;
 	let nextIndexToTest: number = 0;
 	function spawnNextWorker() {
 		if (spareThreads <= 0) {
