@@ -236,6 +236,7 @@ export function collectBattleDataMultiProcess() {
 			combos.push([pokemon, move]);
 		}
 	}
+        console.log(`Number of combinations: ${combos.length}`);
 
 	const NUM_WORKERS: number = process.env.NUM_WORKERS ? parseInt(process.env.NUM_WORKERS) : 2;
 
