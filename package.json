@@ -29,8 +29,7 @@
     "fulltest": "npm run pretest && npm run tsc && mocha -g \".*\""
   },
   "husky": {
-    "hooks": {
-    }
+    "hooks": {}
   },
   "bin": "./pokemon-showdown",
   "homepage": "http://pokemonshowdown.com",
