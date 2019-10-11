@@ -254,6 +254,9 @@ export function collectBattleDataMultiProcess() {
 		nextIndexToTest++;
 		if (allBattleDataCollected(pokemon, move)) {
 			console.log(`Skipping ${pokemon} with ${move}; already fully tested`);
+			// Make the file even if nothing changed, so enumerating movesets is easier for the analyzer
+			makeEmptyFileIfAbsent(pokemon, move);
+
 			setTimeout(spawnNextWorker, 0);
 			return;
 		}
@@ -386,6 +389,16 @@ function loadExistingWinCountsByOpponent(pokemon: string, move: string): WinCoun
 		}
 	}
 	return wcbo;
+}
+
+function makeEmptyFileIfAbsent(pokemon: string, move: string) {
+	if (!fs.existsSync("collectedStats")) {
+		fs.mkdirSync("collectedStats");
+	}
+	const path = `collectedStats/${pokemon}_${move}`;
+	if (!fs.existsSync(path)) {
+		fs.writeFileSync(path, "");
+	}
 }
 
 function writeToFile(pokemon: string, move: string, winCountsByOpponent: WinCountsByOpp) {
