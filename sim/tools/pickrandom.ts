@@ -145,19 +145,18 @@ export function getBattleWinner(pokemon1: string, move1: string, pokemon2: strin
 }
 
 
-const TARGET_RUNS_PER_COMBINATION = 10;
-
 // TODO: Use workers (or multiple processes, which looks pretty similar)
 export function collectBattleData() {
+	const targetRuns = 10;
 	for (let pi1 = 0; pi1 < gen1PokemonNames.length; pi1++) {
 		const pokemon1 = gen1PokemonNames[pi1];
 		const moves1 = getLegalMovesFor(pokemon1);
 		for (let mi1 = 0; mi1 < moves1.length; mi1++) {
 			const move1 = moves1[mi1];
-			if (allBattleDataCollected(pokemon1, move1, pi1, mi1)) {
+			if (allBattleDataCollected(targetRuns, pokemon1, move1, pi1, mi1)) {
 				console.log(`Skipping ${pokemon1} with ${move1}, all data collected`);
 			}
-			collectBattleDataForChoice(pokemon1, move1, pi1, mi1);
+			collectBattleDataForChoice(pokemon1, move1, pi1, mi1, targetRuns);
 		}
 	}
 }
@@ -170,9 +169,10 @@ export function collectBattleDataMultiProcess() {
 			combos.push([pokemon, move]);
 		}
 	}
-        console.log(`Number of combinations: ${combos.length}`);
+	console.log(`Number of combinations: ${combos.length}`);
 
 	const NUM_WORKERS: number = process.env.NUM_WORKERS ? parseInt(process.env.NUM_WORKERS) : 2;
+	const targetRuns = 10;
 
 	let spareThreads: number = NUM_WORKERS;
 	let nextIndexToTest: number = 0;
@@ -186,7 +186,7 @@ export function collectBattleDataMultiProcess() {
 
 		const [pokemon, move] = combos[nextIndexToTest];
 		nextIndexToTest++;
-		if (allBattleDataCollected(pokemon, move)) {
+		if (allBattleDataCollected(targetRuns, pokemon, move)) {
 			console.log(`Skipping ${pokemon} with ${move}; already fully tested`);
 			// Make the file even if nothing changed, so enumerating movesets is easier for the analyzer
 			makeEmptyFileIfAbsent(pokemon, move);
@@ -201,7 +201,8 @@ export function collectBattleDataMultiProcess() {
 			maxBuffer: 50 * 1024 * 1024,
 			env: { ...process.env,
 				CHOSEN_POKEMON: pokemon,
-				CHOSEN_MOVE: move
+				CHOSEN_MOVE: move,
+				TARGET_RUNS: "" + targetRuns,
 				}
 		}, (error, stdout, stderr) => {
 			console.log(`Finished the process for ${pokemon} with ${move}`);
@@ -228,15 +229,23 @@ export function singleChoiceRunner() {
 	if (move === undefined) {
 		throw new Error("CHOSEN_MOVE was not set");
 	}
+	const targetRunsString = process.env.TARGET_RUNS;
+	if (targetRunsString === undefined) {
+		throw new Error("TARGET_RUNS was not set");
+	}
+	const targetRuns = Number.parseInt(targetRunsString);
+	if (targetRuns <= 0) {
+		throw new Error("TARGET_RUNS must be non-negative but was " + targetRuns + ", raw string was " + targetRunsString);
+	}
 	const pi1 = gen1PokemonNames.indexOf(pokemon);
 	const mi1 = getLegalMovesFor(pokemon).indexOf(move);
 	if (pi1 < 0 || mi1 < 0) {
 		throw new Error(`Something's wrong: ${pokemon}, ${move}, ${pi1}, ${mi1}`);
 	}
-	collectBattleDataForChoice(pokemon, move, pi1, mi1);
+	collectBattleDataForChoice(pokemon, move, pi1, mi1, targetRuns);
 }
 
-function allBattleDataCollected(pokemon1: string, move1: string, pi1?: number, mi1?: number): boolean {
+function allBattleDataCollected(targetRuns: number, pokemon1: string, move1: string, pi1?: number, mi1?: number): boolean {
 	if (pi1 === undefined) {
 		pi1 = gen1PokemonNames.indexOf(pokemon1);
 	}
@@ -255,7 +264,7 @@ function allBattleDataCollected(pokemon1: string, move1: string, pi1?: number, m
 			const oppId = pokemon2 + " " + move2;
 			const winCounts: WinCounts = oppId in winCountsByOpponent ? winCountsByOpponent[oppId] : {p1: 0, p2: 0, dnf: 0};
 			const alreadyRunCount = winCounts.p1 + winCounts.p2 + winCounts.dnf;
-			if (alreadyRunCount < TARGET_RUNS_PER_COMBINATION) {
+			if (alreadyRunCount < targetRuns) {
 				return false;
 			}
 		}
@@ -263,7 +272,7 @@ function allBattleDataCollected(pokemon1: string, move1: string, pi1?: number, m
 	return true;
 }
 
-function collectBattleDataForChoice(pokemon1: string, move1: string, pi1: number, mi1: number) {
+function collectBattleDataForChoice(pokemon1: string, move1: string, pi1: number, mi1: number, targetRuns: number) {
 	const winCountsByOpponent = loadExistingWinCountsByOpponent(pokemon1, move1);
 	for (let pi2 = pi1; pi2 < gen1PokemonNames.length; pi2++) {
 		const pokemon2 = gen1PokemonNames[pi2];
@@ -276,13 +285,13 @@ function collectBattleDataForChoice(pokemon1: string, move1: string, pi1: number
 			const oppId = pokemon2 + " " + move2;
 			const winCounts: WinCounts = oppId in winCountsByOpponent ? winCountsByOpponent[oppId] : {p1: 0, p2: 0, dnf: 0};
 			const alreadyRunCount = winCounts.p1 + winCounts.p2 + winCounts.dnf;
-			if (alreadyRunCount >= TARGET_RUNS_PER_COMBINATION) {
+			if (alreadyRunCount >= targetRuns) {
 				continue;
 			}
 			anythingChanged = true;
 			console.log(`${pokemon1} with ${move1} (PP ${Dex.getMove(move1).pp}) vs. ${pokemon2} with ${move2} (PP ${Dex.getMove(move2).pp})`);
 
-			for (let i = alreadyRunCount; i < TARGET_RUNS_PER_COMBINATION; i++) {
+			for (let i = alreadyRunCount; i < targetRuns; i++) {
 				const winner = getBattleWinner(pokemon1, move1, pokemon2, move2);
 				if (winner != undefined) {
 					winCounts[winner as "p1" | "p2"]++;
