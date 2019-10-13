@@ -353,6 +353,7 @@ export class Side {
 	}
 
 	chooseMove(moveText?: string | number, targetLoc?: number, megaOrZ?: boolean | string) {
+		// console.log("Entering chooseMove");
 		if (this.requestState !== 'move') {
 			return this.emitChoiceError(`Can't move: You need a ${this.requestState} response`);
 		}
@@ -453,6 +454,7 @@ export class Side {
 			// Override action and use Struggle if there are no enabled moves with PP
 			// Gen 4 and earlier announce a Pokemon has no moves left before the turn begins, and only to that player's side.
 			if (this.battle.gen <= 4) this.send('-activate', pokemon, 'move: Struggle');
+			// console.log("Selecting move struggle");
 			moveid = 'struggle';
 		} else if (!zMove) {
 			// Check for disabled moves
@@ -519,6 +521,7 @@ export class Side {
 			mega: mega || ultra,
 			zmove: zMove,
 		});
+		// console.log("actions: " + JSON.stringify(this.choice.actions));
 
 		if (pokemon.maybeDisabled) {
 			this.choice.cantUndo = this.choice.cantUndo || pokemon.isLastActive();
