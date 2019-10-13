@@ -29,8 +29,8 @@
 // 	}
 // }
 
-const child_process = require('child_process');
-const path = require('path');
+// const child_process = require('child_process');
+// const path = require('path');
 // const shell = cmd => child_process.execSync(cmd, {stdio: 'inherit', cwd: path.resolve(__dirname, '../..')});
 
 // shell('node build');

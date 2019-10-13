@@ -643,6 +643,7 @@ export class Side {
 			maxMove: maxMove ? maxMove.id : undefined,
 			terastallize: terastallize ? pokemon.teraType : undefined,
 		});
+		// console.log("actions: " + JSON.stringify(this.choice.actions));
 
 		if (pokemon.maybeDisabled) {
 			this.choice.cantUndo = this.choice.cantUndo || pokemon.isLastActive();

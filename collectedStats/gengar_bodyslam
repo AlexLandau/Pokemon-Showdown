@@ -1,6 +1,5 @@
 gengar confuseray 8 2 0
 gengar counter 0 10 0
-gengar doubleedge 6 4 0
 gengar doubleteam 7 3 0
 gengar dreameater 7 3 0
 gengar explosion 10 0 0
@@ -1577,3 +1576,4 @@ mew transform 10 0 0
 mew triattack 10 0 0
 mew watergun 10 0 0
 mew whirlwind 10 0 0
+gengar doubleedge 5 5 0

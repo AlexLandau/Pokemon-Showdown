@@ -79,36 +79,8 @@ const perfectEvs: StatsTable = {hp: 255, atk: 255, def: 255, spe: 255, spa: 255,
 // 30 is perfect for gen 1, 31 for later gens
 const perfectIvs: StatsTable = {hp: 30, atk: 30, def: 30, spe: 30, spa: 30, spd: 30};
 
-function getBattleWinner(pset1: PokemonSet, pset2: PokemonSet): string | undefined {
 
-	const battle = new Battle({
-		formatid: Dex.getId("gen1custombattle"),
-		p1: {name: "p1", team: [pset1]},
-		p2: {name: "p2", team: [pset2]},
-		strictChoices: true
-	});
-
-	battle.start();
-
-	while (!battle.ended) {
-		// battle.makeChoices(`move ${move1}`, `move ${move2}`);
-		// console.log(`${battle.sides[0].pokemon[0].getHealth().secret} vs. ${battle.sides[1].pokemon[0].getHealth().secret}`);
-		battle.makeChoices();
-		// battle.choose();
-		// console.log(`Turn: ${battle.turn}`);
-		if (battle.turn === 1000) {
-			break;
-		}
-	}
-	const winner = battle.winner;
-
-	console.log(`${winner} won after ${battle.turn} turns`);
-	// Eventually...
-	battle.destroy();
-	return winner;
-}
-
-function getBattleWinner2(pokemon1: string, move1: string, pokemon2: string, move2: string): "p1" | "p2" | "dnf" {
+export function getBattleWinner(pokemon1: string, move1: string, pokemon2: string, move2: string): "p1" | "p2" | "dnf" {
 	const pset1: PokemonSet = {
 		name: pokemon1,
 		species: pokemon1,
@@ -135,12 +107,14 @@ function getBattleWinner2(pokemon1: string, move1: string, pokemon2: string, mov
 		level: 100
 	};
 
-	const battle = new Battle({
-		formatid: Dex.getId("gen1custombattle"),
+	Dex.mod("gen1"); // THIS HAS SIDE EFFECTS, DO NOT REMOVE
+	const battleOptions = {
+		formatid: Dex.getId("gen1customgame"),
 		p1: {name: "p1", team: [pset1]},
 		p2: {name: "p2", team: [pset2]},
 		strictChoices: true
-	});
+	};
+	const battle = new Battle(battleOptions);
 
 	battle.start();
 
@@ -154,6 +128,9 @@ function getBattleWinner2(pokemon1: string, move1: string, pokemon2: string, mov
 			break;
 		}
 	}
+	// for (const logline of battle.log) {
+	// 	console.log(logline);
+	// }
 	const winner = battle.winner;
 
 	// console.log(`${winner} won after ${battle.turn} turns`);
@@ -167,49 +144,6 @@ function getBattleWinner2(pokemon1: string, move1: string, pokemon2: string, mov
 	throw new Error(`Unexpected winner value ${winner}`);
 }
 
-function runRandomBattle() {
-	const p1 = pickRandomPokemon();
-	const move1 = pickRandomMove(p1);
-	const popt1: PokemonSet = {
-		name: p1,
-		species: p1,
-		item: "",
-		ability: "",
-		moves: [move1],
-		nature: "",
-		gender: "",
-		evs: perfectEvs,
-		ivs: perfectIvs,
-		level: 100
-	};
-	const p2 = pickRandomPokemon();
-	const move2 = pickRandomMove(p2);
-	const popt2: PokemonSet = {
-		name: p2,
-		species: p2,
-		item: "",
-		ability: "",
-		moves: [move2],
-		nature: "",
-		gender: "",
-		evs: perfectEvs,
-		ivs: perfectIvs,
-		level: 100
-	};
-
-	console.log(`${p1} with ${move1} (PP ${Dex.getMove(move1).pp}) vs. ${p2} with ${move2} (PP ${Dex.getMove(move2).pp})`);
-
-	const winCounts = {p1: 0, p2: 0};
-	for (let i = 0; i < 10; i++) {
-		const winner = getBattleWinner(popt1, popt2);
-		// console.log(`Winner: ${winner}`);
-		if (winner != undefined) {
-			winCounts[winner as "p1" | "p2"]++;
-		}
-	}
-	console.log(`Win counts: ${JSON.stringify(winCounts)}`);
-
-}
 
 const TARGET_RUNS_PER_COMBINATION = 10;
 
@@ -271,6 +205,7 @@ export function collectBattleDataMultiProcess() {
 				}
 		}, (error, stdout, stderr) => {
 			console.log(`Finished the process for ${pokemon} with ${move}`);
+			// console.log(stdout);
 			if (error) {
 				console.log("There was an error: ", error);
 				throw error;
@@ -348,7 +283,7 @@ function collectBattleDataForChoice(pokemon1: string, move1: string, pi1: number
 			console.log(`${pokemon1} with ${move1} (PP ${Dex.getMove(move1).pp}) vs. ${pokemon2} with ${move2} (PP ${Dex.getMove(move2).pp})`);
 
 			for (let i = alreadyRunCount; i < TARGET_RUNS_PER_COMBINATION; i++) {
-				const winner = getBattleWinner2(pokemon1, move1, pokemon2, move2);
+				const winner = getBattleWinner(pokemon1, move1, pokemon2, move2);
 				if (winner != undefined) {
 					winCounts[winner as "p1" | "p2"]++;
 				}

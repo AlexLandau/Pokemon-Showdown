@@ -86,7 +86,7 @@ class TestTools {
 	 * @param {Team[]} [teams]
 	 * @returns {Sim.Battle} A battle.
 	 */
-	createBattle(options, teams) {
+	createBattle(options, teams, printOptions) {
 		if (Array.isArray(options)) {
 			teams = options;
 			options = {};
@@ -111,6 +111,10 @@ class TestTools {
 			assert(Array.isArray(teams[i]), `Team provided is not an array`);
 			const playerSlot = `p${i + 1}`;
 			battleOptions[playerSlot] = {team: teams[i]};
+		}
+
+		if (printOptions) {
+			console.log("battleOptions: " + JSON.stringify(battleOptions));
 		}
 
 		return new Sim.Battle(battleOptions);
