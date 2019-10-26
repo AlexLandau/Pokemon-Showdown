@@ -172,7 +172,7 @@ export function collectBattleDataMultiProcess() {
 	console.log(`Number of combinations: ${combos.length}`);
 
 	const NUM_WORKERS: number = process.env.NUM_WORKERS ? parseInt(process.env.NUM_WORKERS) : 2;
-	const targetRuns = 20;
+	const targetRuns = 30;
 
 	let spareThreads: number = NUM_WORKERS;
 	let nextIndexToTest: number = 0;
