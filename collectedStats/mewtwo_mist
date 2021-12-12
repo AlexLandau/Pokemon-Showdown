@@ -1,10 +1,10 @@
 mewtwo payday 0 30 0
-mewtwo psychic 0 30 0
+mewtwo psychic 0 100 0
 mewtwo psywave 0 30 0
 mewtwo rage 0 30 0
-mewtwo recover 0 30 0
+mewtwo recover 0 100 0
 mewtwo reflect 0 30 0
-mewtwo rest 0 30 0
+mewtwo rest 0 100 0
 mewtwo seismictoss 0 30 0
 mewtwo selfdestruct 21 9 0
 mewtwo skullbash 0 30 0
@@ -16,7 +16,7 @@ mewtwo swift 0 30 0
 mewtwo takedown 0 30 0
 mewtwo teleport 0 30 0
 mewtwo thunder 0 30 0
-mewtwo thunderbolt 0 30 0
+mewtwo thunderbolt 0 100 0
 mewtwo thunderwave 0 30 0
 mewtwo toxic 0 30 0
 mewtwo triattack 0 30 0

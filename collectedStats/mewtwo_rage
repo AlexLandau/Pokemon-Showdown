@@ -1,6 +1,6 @@
-mewtwo recover 30 0 0
+mewtwo recover 100 0 0
 mewtwo reflect 30 0 0
-mewtwo rest 30 0 0
+mewtwo rest 100 0 0
 mewtwo seismictoss 0 30 0
 mewtwo selfdestruct 25 5 0
 mewtwo skullbash 0 30 0
@@ -12,7 +12,7 @@ mewtwo swift 0 30 0
 mewtwo takedown 1 29 0
 mewtwo teleport 30 0 0
 mewtwo thunder 0 30 0
-mewtwo thunderbolt 0 30 0
+mewtwo thunderbolt 0 100 0
 mewtwo thunderwave 30 0 0
 mewtwo toxic 0 30 0
 mewtwo triattack 0 30 0
