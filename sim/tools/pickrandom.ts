@@ -298,6 +298,9 @@ opomsOfInterest.add("mewtwo rest");
 opomsOfInterest.add("omastar icebeam");
 opomsOfInterest.add("vaporeon hydropump");
 opomsOfInterest.add("mewtwo psychic");
+opomsOfInterest.add("omastar toxic");
+opomsOfInterest.add("moltres fireblast");
+
 
 function collectBattleDataForChoice(pokemon1: string, move1: string, pi1: number, mi1: number, targetRuns: number) {
 	const alreadyInteresting = opomsOfInterest.has(pokemon1 + " " + move1);
