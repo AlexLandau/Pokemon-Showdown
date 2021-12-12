@@ -50,7 +50,7 @@ moltres agility 30 0 0
 moltres bide 30 0 0
 moltres doubleedge 0 30 0
 moltres doubleteam 30 0 0
-moltres fireblast 0 30 0
+moltres fireblast 1 99 0
 moltres firespin 20 10 0
 moltres fly 17 13 0
 moltres hyperbeam 6 24 0

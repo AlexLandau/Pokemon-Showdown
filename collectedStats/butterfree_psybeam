@@ -3300,7 +3300,7 @@ omastar submission 30 0 0
 omastar substitute 30 0 0
 omastar surf 0 30 0
 omastar takedown 11 19 0
-omastar toxic 16 14 0
+omastar toxic 50 50 0
 omastar watergun 6 24 0
 omastar withdraw 30 0 0
 kabuto absorb 30 0 0
@@ -3467,7 +3467,7 @@ moltres agility 30 0 0
 moltres bide 12 18 0
 moltres doubleedge 0 30 0
 moltres doubleteam 29 1 0
-moltres fireblast 0 30 0
+moltres fireblast 0 100 0
 moltres firespin 0 30 0
 moltres fly 0 30 0
 moltres hyperbeam 0 30 0
