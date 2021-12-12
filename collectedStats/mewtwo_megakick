@@ -3,12 +3,12 @@ mewtwo metronome 24 6 0
 mewtwo mimic 18 12 0
 mewtwo mist 30 0 0
 mewtwo payday 29 1 0
-mewtwo psychic 23 7 0
+mewtwo psychic 75 25 0
 mewtwo psywave 23 7 0
 mewtwo rage 30 0 0
-mewtwo recover 0 30 0
+mewtwo recover 1 99 0
 mewtwo reflect 30 0 0
-mewtwo rest 14 16 0
+mewtwo rest 42 58 0
 mewtwo seismictoss 16 14 0
 mewtwo selfdestruct 20 10 0
 mewtwo skullbash 30 0 0
@@ -20,7 +20,7 @@ mewtwo swift 26 4 0
 mewtwo takedown 26 4 0
 mewtwo teleport 30 0 0
 mewtwo thunder 15 15 0
-mewtwo thunderbolt 16 14 0
+mewtwo thunderbolt 59 41 0
 mewtwo thunderwave 30 0 0
 mewtwo toxic 27 3 0
 mewtwo triattack 16 14 0

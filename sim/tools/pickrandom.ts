@@ -172,7 +172,7 @@ export function collectBattleDataMultiProcess() {
 	console.log(`Number of combinations: ${combos.length}`);
 
 	const NUM_WORKERS: number = process.env.NUM_WORKERS ? parseInt(process.env.NUM_WORKERS) : 2;
-	const targetRuns = 30;
+	const targetRuns = 100;
 
 	let spareThreads: number = NUM_WORKERS;
 	let nextIndexToTest: number = 0;
@@ -252,16 +252,20 @@ function allBattleDataCollected(targetRuns: number, pokemon1: string, move1: str
 	if (mi1 === undefined) {
 		mi1 = getLegalMovesFor(pokemon1).indexOf(move1);
 	}
+	const alreadyInteresting = opomsOfInterest.has(pokemon1 + " " + move1);
 	const winCountsByOpponent = loadExistingWinCountsByOpponent(pokemon1, move1);
 	for (let pi2 = pi1; pi2 < gen1PokemonNames.length; pi2++) {
 		const pokemon2 = gen1PokemonNames[pi2];
 		const moves2 = getLegalMovesFor(pokemon2);
-		const movesStartingPoint = pi1 === pi2 ? mi1 + 1 : 0;
+		const movesStartingPoint: number = (pi1 === pi2) ? mi1 + 1 : 0;
 		let anythingChanged = false;
 		for (let mi2 = movesStartingPoint; mi2 < moves2.length; mi2++) {
 			const move2 = moves2[mi2];
 
 			const oppId = pokemon2 + " " + move2;
+			if (!alreadyInteresting && !opomsOfInterest.has(oppId)) {
+				continue;
+			}
 			const winCounts: WinCounts = oppId in winCountsByOpponent ? winCountsByOpponent[oppId] : {p1: 0, p2: 0, dnf: 0};
 			const alreadyRunCount = winCounts.p1 + winCounts.p2 + winCounts.dnf;
 			if (alreadyRunCount < targetRuns) {
@@ -272,7 +276,31 @@ function allBattleDataCollected(targetRuns: number, pokemon1: string, move1: str
 	return true;
 }
 
+const opomsOfInterest = new Set<string>();
+opomsOfInterest.add("mewtwo blizzard");
+opomsOfInterest.add("mewtwo fireblast");
+opomsOfInterest.add("mewtwo bodyslam");
+opomsOfInterest.add("lapras bide");
+opomsOfInterest.add("mewtwo thunderbolt");
+opomsOfInterest.add("mewtwo recover");
+opomsOfInterest.add("mewtwo bide");
+opomsOfInterest.add("cloyster clamp");
+opomsOfInterest.add("mewtwo icebeam");
+opomsOfInterest.add("kabutops slash");
+opomsOfInterest.add("chansey seismictoss");
+opomsOfInterest.add("dewgong toxic");
+opomsOfInterest.add("chansey bide");
+opomsOfInterest.add("rhydon seismictoss");
+opomsOfInterest.add("rhydon earthquake");
+opomsOfInterest.add("snorlax bodyslam");
+opomsOfInterest.add("chansey rest");
+opomsOfInterest.add("mewtwo rest");
+opomsOfInterest.add("omastar icebeam");
+opomsOfInterest.add("vaporeon hydropump");
+opomsOfInterest.add("mewtwo psychic");
+
 function collectBattleDataForChoice(pokemon1: string, move1: string, pi1: number, mi1: number, targetRuns: number) {
+	const alreadyInteresting = opomsOfInterest.has(pokemon1 + " " + move1);
 	const winCountsByOpponent = loadExistingWinCountsByOpponent(pokemon1, move1);
 	for (let pi2 = pi1; pi2 < gen1PokemonNames.length; pi2++) {
 		const pokemon2 = gen1PokemonNames[pi2];
@@ -281,8 +309,12 @@ function collectBattleDataForChoice(pokemon1: string, move1: string, pi1: number
 		let anythingChanged = false;
 		for (let mi2 = movesStartingPoint; mi2 < moves2.length; mi2++) {
 			const move2 = moves2[mi2];
-
 			const oppId = pokemon2 + " " + move2;
+
+			if (!alreadyInteresting && !opomsOfInterest.has(oppId)) {
+				continue;
+			}
+
 			const winCounts: WinCounts = oppId in winCountsByOpponent ? winCountsByOpponent[oppId] : {p1: 0, p2: 0, dnf: 0};
 			const alreadyRunCount = winCounts.p1 + winCounts.p2 + winCounts.dnf;
 			if (alreadyRunCount >= targetRuns) {
