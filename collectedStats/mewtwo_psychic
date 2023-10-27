@@ -1,8 +1,8 @@
 mewtwo psywave 81 19 0
 mewtwo rage 100 0 0
-mewtwo recover 10 90 0
+mewtwo recover 19 131 0
 mewtwo reflect 100 0 0
-mewtwo rest 75 25 0
+mewtwo rest 112 38 0
 mewtwo seismictoss 19 81 0
 mewtwo selfdestruct 66 34 0
 mewtwo skullbash 95 5 0
@@ -14,7 +14,7 @@ mewtwo swift 72 28 0
 mewtwo takedown 72 28 0
 mewtwo teleport 100 0 0
 mewtwo thunder 49 51 0
-mewtwo thunderbolt 37 63 0
+mewtwo thunderbolt 51 99 0
 mewtwo thunderwave 100 0 0
 mewtwo toxic 92 8 0
 mewtwo triattack 26 74 0
