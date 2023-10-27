@@ -279,30 +279,32 @@ function allBattleDataCollected(targetRuns: number, pokemon1: string, move1: str
 }
 
 const opomsOfInterest = new Set<string>();
-opomsOfInterest.add("mewtwo blizzard");
-opomsOfInterest.add("mewtwo fireblast");
-opomsOfInterest.add("mewtwo bodyslam");
-opomsOfInterest.add("lapras bide");
-opomsOfInterest.add("mewtwo thunderbolt");
-opomsOfInterest.add("mewtwo recover");
-opomsOfInterest.add("mewtwo bide");
-opomsOfInterest.add("cloyster clamp");
-opomsOfInterest.add("mewtwo icebeam");
-opomsOfInterest.add("kabutops slash");
-opomsOfInterest.add("chansey seismictoss");
-opomsOfInterest.add("dewgong toxic");
 opomsOfInterest.add("chansey bide");
-opomsOfInterest.add("rhydon seismictoss");
-opomsOfInterest.add("rhydon earthquake");
-opomsOfInterest.add("snorlax bodyslam");
 opomsOfInterest.add("chansey rest");
-opomsOfInterest.add("mewtwo rest");
-opomsOfInterest.add("omastar icebeam");
-opomsOfInterest.add("vaporeon hydropump");
-opomsOfInterest.add("mewtwo psychic");
-opomsOfInterest.add("omastar toxic");
-opomsOfInterest.add("moltres fireblast");
+opomsOfInterest.add("chansey seismictoss");
+opomsOfInterest.add("cloyster clamp");
+opomsOfInterest.add("dewgong toxic");
 opomsOfInterest.add("gengar toxic");
+opomsOfInterest.add("kabutops slash");
+opomsOfInterest.add("lapras bide");
+opomsOfInterest.add("mewtwo bide");
+opomsOfInterest.add("mewtwo blizzard");
+opomsOfInterest.add("mewtwo bodyslam");
+opomsOfInterest.add("mewtwo fireblast");
+opomsOfInterest.add("mewtwo icebeam");
+opomsOfInterest.add("mewtwo psychic");
+opomsOfInterest.add("mewtwo recover");
+opomsOfInterest.add("mewtwo rest");
+opomsOfInterest.add("mewtwo thunderbolt");
+opomsOfInterest.add("moltres fireblast");
+opomsOfInterest.add("omastar hydropump");
+opomsOfInterest.add("omastar icebeam");
+opomsOfInterest.add("omastar toxic");
+opomsOfInterest.add("rhydon earthquake");
+opomsOfInterest.add("rhydon seismictoss");
+opomsOfInterest.add("tentacruel hydropump");
+opomsOfInterest.add("snorlax bodyslam");
+opomsOfInterest.add("vaporeon hydropump");
 
 
 function collectBattleDataForChoice(pokemon1: string, move1: string, pi1: number, mi1: number, targetRuns: number) {
