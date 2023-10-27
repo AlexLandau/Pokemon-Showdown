@@ -109,7 +109,7 @@ mewtwo rage 0 30 0
 mewtwo recover 40 60 0
 mewtwo reflect 13 17 0
 mewtwo rest 47 53 0
-mewtwo seismictoss 0 30 0
+mewtwo seismictoss 0 100 0
 mewtwo selfdestruct 0 30 0
 mewtwo skullbash 7 23 0
 mewtwo solarbeam 0 30 0

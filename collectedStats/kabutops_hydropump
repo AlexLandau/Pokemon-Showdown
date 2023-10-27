@@ -41,7 +41,7 @@ aerodactyl toxic 30 0 0
 aerodactyl whirlwind 30 0 0
 aerodactyl wingattack 30 0 0
 snorlax amnesia 30 0 0
-snorlax bide 17 13 0
+snorlax bide 54 46 0
 snorlax blizzard 20 10 0
 snorlax bodyslam 77 23 0
 snorlax bubblebeam 28 2 0
@@ -260,7 +260,7 @@ mewtwo rage 30 0 0
 mewtwo recover 0 100 0
 mewtwo reflect 30 0 0
 mewtwo rest 3 97 0
-mewtwo seismictoss 0 30 0
+mewtwo seismictoss 0 100 0
 mewtwo selfdestruct 30 0 0
 mewtwo skullbash 30 0 0
 mewtwo solarbeam 0 30 0

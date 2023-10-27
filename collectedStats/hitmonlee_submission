@@ -128,7 +128,7 @@ rhydon blizzard 10 20 0
 rhydon bodyslam 3 27 0
 rhydon bubblebeam 22 8 0
 rhydon counter 0 30 0
-rhydon dig 3 27 0
+rhydon dig 14 86 0
 rhydon doubleedge 18 12 0
 rhydon doubleteam 30 0 0
 rhydon earthquake 17 83 0
@@ -158,7 +158,7 @@ rhydon tailwhip 30 0 0
 rhydon takedown 19 11 0
 rhydon thunder 16 14 0
 rhydon thunderbolt 19 11 0
-rhydon toxic 28 2 0
+rhydon toxic 98 2 0
 rhydon watergun 29 1 0
 chansey bide 97 3 0
 chansey blizzard 8 22 0
@@ -174,7 +174,7 @@ chansey fireblast 9 21 0
 chansey flash 30 0 0
 chansey growl 30 0 0
 chansey hyperbeam 21 9 0
-chansey icebeam 23 7 0
+chansey icebeam 62 38 0
 chansey lightscreen 30 0 0
 chansey megakick 25 5 0
 chansey megapunch 30 0 0
@@ -656,7 +656,7 @@ lapras growl 30 0 0
 lapras horndrill 30 0 0
 lapras hydropump 18 12 0
 lapras hyperbeam 26 4 0
-lapras icebeam 13 17 0
+lapras icebeam 58 42 0
 lapras mimic 30 0 0
 lapras mist 30 0 0
 lapras psychic 9 21 0
@@ -673,7 +673,7 @@ lapras surf 12 18 0
 lapras takedown 27 3 0
 lapras thunder 16 14 0
 lapras thunderbolt 23 7 0
-lapras toxic 30 0 0
+lapras toxic 100 0 0
 lapras watergun 29 1 0
 ditto transform 27 3 0
 eevee bide 30 0 0
@@ -841,7 +841,7 @@ omastar doubleedge 28 2 0
 omastar doubleteam 30 0 0
 omastar hornattack 29 1 0
 omastar horndrill 30 0 0
-omastar hydropump 7 23 0
+omastar hydropump 25 75 0
 omastar hyperbeam 29 1 0
 omastar icebeam 61 39 0
 omastar leer 30 0 0
@@ -854,7 +854,7 @@ omastar skullbash 30 0 0
 omastar spikecannon 29 1 0
 omastar submission 30 0 0
 omastar substitute 30 0 0
-omastar surf 22 8 0
+omastar surf 61 39 0
 omastar takedown 29 1 0
 omastar toxic 100 0 0
 omastar watergun 27 3 0
@@ -934,7 +934,7 @@ aerodactyl toxic 29 1 0
 aerodactyl whirlwind 30 0 0
 aerodactyl wingattack 3 27 0
 snorlax amnesia 30 0 0
-snorlax bide 27 3 0
+snorlax bide 93 7 0
 snorlax blizzard 22 8 0
 snorlax bodyslam 40 60 0
 snorlax bubblebeam 28 2 0
@@ -1153,7 +1153,7 @@ mewtwo rage 0 30 0
 mewtwo recover 0 100 0
 mewtwo reflect 30 0 0
 mewtwo rest 0 100 0
-mewtwo seismictoss 0 30 0
+mewtwo seismictoss 0 100 0
 mewtwo selfdestruct 2 28 0
 mewtwo skullbash 0 30 0
 mewtwo solarbeam 0 30 0

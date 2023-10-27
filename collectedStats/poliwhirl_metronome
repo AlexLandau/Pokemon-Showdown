@@ -319,7 +319,7 @@ tentacruel constrict 30 0 0
 tentacruel cut 16 14 0
 tentacruel doubleedge 7 23 0
 tentacruel doubleteam 27 3 0
-tentacruel hydropump 2 28 0
+tentacruel hydropump 4 96 0
 tentacruel hyperbeam 4 26 0
 tentacruel icebeam 3 27 0
 tentacruel megadrain 1 29 0
@@ -396,7 +396,7 @@ golem bide 20 10 0
 golem bodyslam 3 27 0
 golem counter 26 4 0
 golem defensecurl 28 2 0
-golem dig 2 28 0
+golem dig 14 86 0
 golem doubleedge 6 24 0
 golem doubleteam 21 9 0
 golem earthquake 2 28 0
@@ -420,7 +420,7 @@ golem submission 8 22 0
 golem substitute 25 5 0
 golem tackle 21 9 0
 golem takedown 10 20 0
-golem toxic 8 22 0
+golem toxic 40 60 0
 ponyta agility 29 1 0
 ponyta bide 22 8 0
 ponyta bodyslam 10 20 0
@@ -792,7 +792,7 @@ cloyster swift 4 26 0
 cloyster tackle 21 9 0
 cloyster takedown 5 25 0
 cloyster teleport 28 2 0
-cloyster toxic 7 23 0
+cloyster toxic 13 87 0
 cloyster triattack 7 23 0
 cloyster watergun 24 6 0
 cloyster withdraw 26 4 0
@@ -814,7 +814,7 @@ gastly selfdestruct 30 0 0
 gastly substitute 19 8 3
 gastly thunder 2 28 0
 gastly thunderbolt 1 29 0
-gastly toxic 5 24 1
+gastly toxic 17 82 1
 haunter bide 12 16 2
 haunter confuseray 15 13 2
 haunter doubleteam 9 15 6
@@ -833,7 +833,7 @@ haunter selfdestruct 29 1 0
 haunter substitute 21 6 3
 haunter thunder 1 29 0
 haunter thunderbolt 0 30 0
-haunter toxic 2 28 0
+haunter toxic 9 91 0
 gengar bide 7 20 3
 gengar bodyslam 4 23 3
 gengar confuseray 14 14 2
@@ -864,7 +864,7 @@ gengar substitute 17 10 3
 gengar takedown 4 26 0
 gengar thunder 0 30 0
 gengar thunderbolt 0 30 0
-gengar toxic 1 29 0
+gengar toxic 4 95 1
 onix bide 26 4 0
 onix bind 26 4 0
 onix bodyslam 10 20 0
@@ -888,7 +888,7 @@ onix strength 23 7 0
 onix substitute 27 3 0
 onix tackle 27 3 0
 onix takedown 18 12 0
-onix toxic 12 18 0
+onix toxic 44 56 0
 drowzee bide 18 12 0
 drowzee bodyslam 9 21 0
 drowzee confusion 6 24 0
@@ -1317,7 +1317,7 @@ rhydon blizzard 12 18 0
 rhydon bodyslam 5 25 0
 rhydon bubblebeam 22 8 0
 rhydon counter 26 4 0
-rhydon dig 3 27 0
+rhydon dig 13 87 0
 rhydon doubleedge 4 26 0
 rhydon doubleteam 21 9 0
 rhydon earthquake 13 87 0
@@ -1347,7 +1347,7 @@ rhydon tailwhip 25 5 0
 rhydon takedown 11 19 0
 rhydon thunder 4 26 0
 rhydon thunderbolt 4 26 0
-rhydon toxic 12 18 0
+rhydon toxic 29 71 0
 rhydon watergun 21 9 0
 chansey bide 23 77 0
 chansey blizzard 4 26 0
@@ -1363,7 +1363,7 @@ chansey fireblast 2 28 0
 chansey flash 26 4 0
 chansey growl 28 2 0
 chansey hyperbeam 20 10 0
-chansey icebeam 6 24 0
+chansey icebeam 16 84 0
 chansey lightscreen 30 0 0
 chansey megakick 12 18 0
 chansey megapunch 21 9 0
@@ -1845,7 +1845,7 @@ lapras growl 26 4 0
 lapras horndrill 29 1 0
 lapras hydropump 2 28 0
 lapras hyperbeam 2 28 0
-lapras icebeam 0 30 0
+lapras icebeam 4 96 0
 lapras mimic 16 14 0
 lapras mist 30 0 0
 lapras psychic 0 30 0
@@ -1862,7 +1862,7 @@ lapras surf 2 28 0
 lapras takedown 9 21 0
 lapras thunder 0 30 0
 lapras thunderbolt 0 30 0
-lapras toxic 2 28 0
+lapras toxic 11 89 0
 lapras watergun 15 15 0
 ditto transform 22 8 0
 eevee bide 23 7 0
@@ -2030,7 +2030,7 @@ omastar doubleedge 7 23 0
 omastar doubleteam 21 9 0
 omastar hornattack 15 15 0
 omastar horndrill 26 4 0
-omastar hydropump 3 27 0
+omastar hydropump 10 90 0
 omastar hyperbeam 8 22 0
 omastar icebeam 20 80 0
 omastar leer 28 2 0
@@ -2043,7 +2043,7 @@ omastar skullbash 20 10 0
 omastar spikecannon 6 24 0
 omastar submission 12 18 0
 omastar substitute 26 4 0
-omastar surf 2 28 0
+omastar surf 9 91 0
 omastar takedown 9 21 0
 omastar toxic 27 73 0
 omastar watergun 8 22 0
@@ -2123,7 +2123,7 @@ aerodactyl toxic 6 24 0
 aerodactyl whirlwind 27 3 0
 aerodactyl wingattack 9 21 0
 snorlax amnesia 27 3 0
-snorlax bide 9 21 0
+snorlax bide 35 65 0
 snorlax blizzard 6 24 0
 snorlax bodyslam 2 98 0
 snorlax bubblebeam 21 9 0
@@ -2342,7 +2342,7 @@ mewtwo rage 8 22 0
 mewtwo recover 7 93 0
 mewtwo reflect 28 2 0
 mewtwo rest 16 84 0
-mewtwo seismictoss 0 30 0
+mewtwo seismictoss 1 99 0
 mewtwo selfdestruct 24 6 0
 mewtwo skullbash 1 29 0
 mewtwo solarbeam 0 30 0

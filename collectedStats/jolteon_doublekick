@@ -106,7 +106,7 @@ omastar doubleedge 25 5 0
 omastar doubleteam 30 0 0
 omastar hornattack 29 1 0
 omastar horndrill 30 0 0
-omastar hydropump 7 23 0
+omastar hydropump 23 77 0
 omastar hyperbeam 25 5 0
 omastar icebeam 38 62 0
 omastar leer 30 0 0
@@ -119,7 +119,7 @@ omastar skullbash 30 0 0
 omastar spikecannon 25 5 0
 omastar submission 30 0 0
 omastar substitute 30 0 0
-omastar surf 1 29 0
+omastar surf 2 98 0
 omastar takedown 27 3 0
 omastar toxic 100 0 0
 omastar watergun 30 0 0
@@ -199,7 +199,7 @@ aerodactyl toxic 23 7 0
 aerodactyl whirlwind 30 0 0
 aerodactyl wingattack 30 0 0
 snorlax amnesia 30 0 0
-snorlax bide 0 30 0
+snorlax bide 1 99 0
 snorlax blizzard 15 15 0
 snorlax bodyslam 1 99 0
 snorlax bubblebeam 30 0 0
@@ -418,7 +418,7 @@ mewtwo rage 0 30 0
 mewtwo recover 0 100 0
 mewtwo reflect 30 0 0
 mewtwo rest 4 96 0
-mewtwo seismictoss 0 30 0
+mewtwo seismictoss 0 100 0
 mewtwo selfdestruct 20 10 0
 mewtwo skullbash 0 30 0
 mewtwo solarbeam 0 30 0

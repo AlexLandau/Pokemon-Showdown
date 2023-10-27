@@ -13,7 +13,7 @@ lapras surf 6 24 0
 lapras takedown 8 22 0
 lapras thunder 9 21 0
 lapras thunderbolt 3 27 0
-lapras toxic 10 20 0
+lapras toxic 22 78 0
 lapras watergun 6 24 0
 ditto transform 0 0 30
 eevee bide 30 0 0
@@ -181,7 +181,7 @@ omastar doubleedge 0 30 0
 omastar doubleteam 24 6 0
 omastar hornattack 0 30 0
 omastar horndrill 29 1 0
-omastar hydropump 28 2 0
+omastar hydropump 94 6 0
 omastar hyperbeam 1 29 0
 omastar icebeam 100 0 0
 omastar leer 30 0 0
@@ -194,7 +194,7 @@ omastar skullbash 0 30 0
 omastar spikecannon 0 30 0
 omastar submission 18 12 0
 omastar substitute 23 7 0
-omastar surf 30 0 0
+omastar surf 100 0 0
 omastar takedown 3 27 0
 omastar toxic 17 83 0
 omastar watergun 30 0 0
@@ -274,7 +274,7 @@ aerodactyl toxic 0 30 0
 aerodactyl whirlwind 30 0 0
 aerodactyl wingattack 0 30 0
 snorlax amnesia 30 0 0
-snorlax bide 0 30 0
+snorlax bide 0 100 0
 snorlax blizzard 30 0 0
 snorlax bodyslam 0 100 0
 snorlax bubblebeam 30 0 0
@@ -493,7 +493,7 @@ mewtwo rage 3 27 0
 mewtwo recover 0 100 0
 mewtwo reflect 30 0 0
 mewtwo rest 21 79 0
-mewtwo seismictoss 0 30 0
+mewtwo seismictoss 0 100 0
 mewtwo selfdestruct 21 9 0
 mewtwo skullbash 0 30 0
 mewtwo solarbeam 0 30 0

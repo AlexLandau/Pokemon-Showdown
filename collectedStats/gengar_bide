@@ -27,7 +27,7 @@ gengar substitute 0 0 30
 gengar takedown 0 0 30
 gengar thunder 17 13 0
 gengar thunderbolt 10 20 0
-gengar toxic 0 0 30
+gengar toxic 0 0 100
 onix bide 30 0 0
 onix bind 30 0 0
 onix bodyslam 30 0 0
@@ -51,7 +51,7 @@ onix strength 30 0 0
 onix substitute 30 0 0
 onix tackle 30 0 0
 onix takedown 30 0 0
-onix toxic 30 0 0
+onix toxic 100 0 0
 drowzee bide 30 0 0
 drowzee bodyslam 30 0 0
 drowzee confusion 26 4 0
@@ -480,7 +480,7 @@ rhydon blizzard 10 18 2
 rhydon bodyslam 30 0 0
 rhydon bubblebeam 7 23 0
 rhydon counter 30 0 0
-rhydon dig 0 30 0
+rhydon dig 0 100 0
 rhydon doubleedge 30 0 0
 rhydon doubleteam 30 0 0
 rhydon earthquake 0 100 0
@@ -510,7 +510,7 @@ rhydon tailwhip 30 0 0
 rhydon takedown 30 0 0
 rhydon thunder 6 24 0
 rhydon thunderbolt 2 28 0
-rhydon toxic 30 0 0
+rhydon toxic 100 0 0
 rhydon watergun 15 15 0
 chansey bide 36 64 0
 chansey blizzard 0 30 0
@@ -526,7 +526,7 @@ chansey fireblast 0 30 0
 chansey flash 13 17 0
 chansey growl 14 16 0
 chansey hyperbeam 14 16 0
-chansey icebeam 0 30 0
+chansey icebeam 0 100 0
 chansey lightscreen 15 15 0
 chansey megakick 14 16 0
 chansey megapunch 7 23 0
@@ -1008,7 +1008,7 @@ lapras growl 30 0 0
 lapras horndrill 30 0 0
 lapras hydropump 3 27 0
 lapras hyperbeam 30 0 0
-lapras icebeam 2 28 0
+lapras icebeam 15 85 0
 lapras mimic 30 0 0
 lapras mist 30 0 0
 lapras psychic 17 13 0
@@ -1025,7 +1025,7 @@ lapras surf 5 25 0
 lapras takedown 30 0 0
 lapras thunder 11 19 0
 lapras thunderbolt 12 18 0
-lapras toxic 30 0 0
+lapras toxic 100 0 0
 lapras watergun 6 24 0
 ditto transform 0 0 30
 eevee bide 30 0 0
@@ -1193,7 +1193,7 @@ omastar doubleedge 30 0 0
 omastar doubleteam 30 0 0
 omastar hornattack 30 0 0
 omastar horndrill 30 0 0
-omastar hydropump 10 20 0
+omastar hydropump 50 50 0
 omastar hyperbeam 30 0 0
 omastar icebeam 10 90 0
 omastar leer 30 0 0
@@ -1206,7 +1206,7 @@ omastar skullbash 30 0 0
 omastar spikecannon 30 0 0
 omastar submission 30 0 0
 omastar substitute 30 0 0
-omastar surf 30 0 0
+omastar surf 99 1 0
 omastar takedown 30 0 0
 omastar toxic 100 0 0
 omastar watergun 26 4 0
@@ -1286,7 +1286,7 @@ aerodactyl toxic 30 0 0
 aerodactyl whirlwind 30 0 0
 aerodactyl wingattack 3 27 0
 snorlax amnesia 30 0 0
-snorlax bide 30 0 0
+snorlax bide 100 0 0
 snorlax blizzard 1 29 0
 snorlax bodyslam 100 0 0
 snorlax bubblebeam 0 30 0
@@ -1505,7 +1505,7 @@ mewtwo rage 30 0 0
 mewtwo recover 100 0 0
 mewtwo reflect 30 0 0
 mewtwo rest 100 0 0
-mewtwo seismictoss 0 30 0
+mewtwo seismictoss 0 100 0
 mewtwo selfdestruct 30 0 0
 mewtwo skullbash 30 0 0
 mewtwo solarbeam 15 15 0

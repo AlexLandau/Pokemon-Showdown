@@ -5,7 +5,7 @@ omastar skullbash 30 0 0
 omastar spikecannon 15 15 0
 omastar submission 0 30 0
 omastar substitute 30 0 0
-omastar surf 0 30 0
+omastar surf 0 100 0
 omastar takedown 12 18 0
 omastar toxic 0 100 0
 omastar watergun 0 30 0
@@ -85,7 +85,7 @@ aerodactyl toxic 0 30 0
 aerodactyl whirlwind 30 0 0
 aerodactyl wingattack 5 25 0
 snorlax amnesia 30 0 0
-snorlax bide 0 30 0
+snorlax bide 0 100 0
 snorlax blizzard 5 25 0
 snorlax bodyslam 0 100 0
 snorlax bubblebeam 0 30 0
@@ -304,7 +304,7 @@ mewtwo rage 30 0 0
 mewtwo recover 100 0 0
 mewtwo reflect 30 0 0
 mewtwo rest 100 0 0
-mewtwo seismictoss 0 30 0
+mewtwo seismictoss 0 100 0
 mewtwo selfdestruct 30 0 0
 mewtwo skullbash 27 3 0
 mewtwo solarbeam 0 30 0
