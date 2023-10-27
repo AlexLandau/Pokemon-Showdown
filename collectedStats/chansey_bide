@@ -11,7 +11,7 @@ chansey fireblast 38 62 0
 chansey flash 96 4 0
 chansey growl 76 24 0
 chansey hyperbeam 50 50 0
-chansey icebeam 42 58 0
+chansey icebeam 55 95 0
 chansey lightscreen 52 48 0
 chansey megakick 57 43 0
 chansey megapunch 69 31 0
@@ -493,7 +493,7 @@ lapras growl 72 28 0
 lapras horndrill 6 94 0
 lapras hydropump 86 14 0
 lapras hyperbeam 67 33 0
-lapras icebeam 51 49 0
+lapras icebeam 70 80 0
 lapras mimic 100 0 0
 lapras mist 25 75 0
 lapras psychic 90 10 0
@@ -510,7 +510,7 @@ lapras surf 60 40 0
 lapras takedown 95 5 0
 lapras thunder 78 22 0
 lapras thunderbolt 86 14 0
-lapras toxic 0 100 0
+lapras toxic 0 150 0
 lapras watergun 100 0 0
 ditto transform 100 0 0
 eevee bide 100 0 0
@@ -691,7 +691,7 @@ omastar skullbash 100 0 0
 omastar spikecannon 100 0 0
 omastar submission 39 61 0
 omastar substitute 100 0 0
-omastar surf 100 0 0
+omastar surf 150 0 0
 omastar takedown 98 2 0
 omastar toxic 0 150 0
 omastar watergun 100 0 0
@@ -771,7 +771,7 @@ aerodactyl toxic 0 100 0
 aerodactyl whirlwind 100 0 0
 aerodactyl wingattack 100 0 0
 snorlax amnesia 95 5 0
-snorlax bide 0 100 0
+snorlax bide 0 150 0
 snorlax blizzard 57 43 0
 snorlax bodyslam 132 18 0
 snorlax bubblebeam 100 0 0
@@ -990,7 +990,7 @@ mewtwo rage 100 0 0
 mewtwo recover 150 0 0
 mewtwo reflect 100 0 0
 mewtwo rest 150 0 0
-mewtwo seismictoss 100 0 0
+mewtwo seismictoss 150 0 0
 mewtwo selfdestruct 71 29 0
 mewtwo skullbash 100 0 0
 mewtwo solarbeam 100 0 0

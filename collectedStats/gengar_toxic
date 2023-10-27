@@ -21,7 +21,7 @@ onix strength 30 0 0
 onix substitute 30 0 0
 onix tackle 30 0 0
 onix takedown 30 0 0
-onix toxic 30 0 0
+onix toxic 150 0 0
 drowzee bide 30 0 0
 drowzee bodyslam 30 0 0
 drowzee confusion 0 30 0
@@ -450,7 +450,7 @@ rhydon blizzard 24 6 0
 rhydon bodyslam 30 0 0
 rhydon bubblebeam 30 0 0
 rhydon counter 30 0 0
-rhydon dig 0 30 0
+rhydon dig 0 150 0
 rhydon doubleedge 30 0 0
 rhydon doubleteam 30 0 0
 rhydon earthquake 0 150 0
@@ -480,7 +480,7 @@ rhydon tailwhip 30 0 0
 rhydon takedown 30 0 0
 rhydon thunder 28 2 0
 rhydon thunderbolt 27 3 0
-rhydon toxic 30 0 0
+rhydon toxic 150 0 0
 rhydon watergun 30 0 0
 chansey bide 150 0 0
 chansey blizzard 4 26 0
@@ -496,7 +496,7 @@ chansey fireblast 4 26 0
 chansey flash 30 0 0
 chansey growl 30 0 0
 chansey hyperbeam 30 0 0
-chansey icebeam 0 30 0
+chansey icebeam 1 149 0
 chansey lightscreen 30 0 0
 chansey megakick 30 0 0
 chansey megapunch 30 0 0
@@ -978,7 +978,7 @@ lapras growl 30 0 0
 lapras horndrill 30 0 0
 lapras hydropump 1 29 0
 lapras hyperbeam 30 0 0
-lapras icebeam 0 30 0
+lapras icebeam 0 150 0
 lapras mimic 30 0 0
 lapras mist 30 0 0
 lapras psychic 0 30 0
@@ -995,7 +995,7 @@ lapras surf 0 30 0
 lapras takedown 30 0 0
 lapras thunder 11 19 0
 lapras thunderbolt 1 29 0
-lapras toxic 30 0 0
+lapras toxic 150 0 0
 lapras watergun 27 3 0
 ditto transform 25 0 5
 eevee bide 30 0 0
@@ -1176,7 +1176,7 @@ omastar skullbash 30 0 0
 omastar spikecannon 30 0 0
 omastar submission 30 0 0
 omastar substitute 30 0 0
-omastar surf 0 30 0
+omastar surf 0 150 0
 omastar takedown 30 0 0
 omastar toxic 150 0 0
 omastar watergun 21 9 0
@@ -1256,7 +1256,7 @@ aerodactyl toxic 30 0 0
 aerodactyl whirlwind 30 0 0
 aerodactyl wingattack 0 30 0
 snorlax amnesia 30 0 0
-snorlax bide 30 0 0
+snorlax bide 150 0 0
 snorlax blizzard 9 21 0
 snorlax bodyslam 150 0 0
 snorlax bubblebeam 30 0 0
@@ -1475,7 +1475,7 @@ mewtwo rage 30 0 0
 mewtwo recover 150 0 0
 mewtwo reflect 30 0 0
 mewtwo rest 0 150 0
-mewtwo seismictoss 0 30 0
+mewtwo seismictoss 0 150 0
 mewtwo selfdestruct 30 0 0
 mewtwo skullbash 30 0 0
 mewtwo solarbeam 30 0 0
