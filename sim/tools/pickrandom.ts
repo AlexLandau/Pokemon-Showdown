@@ -178,7 +178,7 @@ export function collectBattleDataMultiProcess() {
 	console.log(`Number of combinations: ${combos.length}`);
 
 	const NUM_WORKERS: number = process.env.NUM_WORKERS ? parseInt(process.env.NUM_WORKERS) : 2;
-	const targetRuns = 100;
+	const targetRuns = 175;
 
 	let spareThreads: number = NUM_WORKERS;
 	let nextIndexToTest: number = 0;
@@ -272,7 +272,7 @@ function allBattleDataCollected(targetRuns: number, pokemon1: string, move1: str
 			// && here for "one of the two Pokemon must be of interest"
 			// || here for "both Pokemon must be of interest"
 			// (also need to tweak in one other place)
-			if (!alreadyInteresting && !opomsOfInterest.has(oppId)) {
+			if (!alreadyInteresting || !opomsOfInterest.has(oppId)) {
 				continue;
 			}
 			const winCounts: WinCounts = oppId in winCountsByOpponent ? winCountsByOpponent[oppId] : {p1: 0, p2: 0, dnf: 0};
@@ -340,7 +340,7 @@ function collectBattleDataForChoice(pokemon1: string, move1: string, pi1: number
 			const move2 = moves2[mi2];
 			const oppId = pokemon2 + " " + move2;
 
-			if (!alreadyInteresting && !opomsOfInterest.has(oppId)) {
+			if (!alreadyInteresting || !opomsOfInterest.has(oppId)) {
 				continue;
 			}
 

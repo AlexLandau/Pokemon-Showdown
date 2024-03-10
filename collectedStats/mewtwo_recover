@@ -1,6 +1,6 @@
 mewtwo reflect 17 83 0
-mewtwo rest 150 0 0
-mewtwo seismictoss 38 112 0
+mewtwo rest 175 0 0
+mewtwo seismictoss 49 126 0
 mewtwo selfdestruct 71 29 0
 mewtwo skullbash 1 99 0
 mewtwo solarbeam 31 69 0
@@ -11,7 +11,7 @@ mewtwo swift 26 74 0
 mewtwo takedown 100 0 0
 mewtwo teleport 49 51 0
 mewtwo thunder 92 8 0
-mewtwo thunderbolt 140 10 0
+mewtwo thunderbolt 163 12 0
 mewtwo thunderwave 99 1 0
 mewtwo toxic 0 100 0
 mewtwo triattack 100 0 0
