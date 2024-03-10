@@ -17,6 +17,7 @@ const type = argv[3];
 const args = {
 	gen: genNumber,
 	type: type,
+	extraArgs: argv.slice(4),
 };
 
 runTargetedCollection(args);

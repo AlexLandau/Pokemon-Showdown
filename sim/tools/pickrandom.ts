@@ -27,18 +27,6 @@ function getRandomInt(min: number, max: number) {
 	return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
 }
 
-function pickRandomPokemon(): string {
-	const pokemonIndex = getRandomInt(0, 151);
-	const pokemonName = gen1PokemonNames[pokemonIndex];
-	return pokemonName;
-}
-
-function pickRandomMove(pokemonName: string): string {
-	const eligibleMoves = getLegalMovesFor(pokemonName);
-	const randomMove = eligibleMoves[getRandomInt(0, eligibleMoves.length)];
-	return randomMove;
-}
-
 // TODO: Maybe profile to see if this is worth caching
 function getLegalMovesFor(pokemonName: string): string[] {
 	// console.log("mon is ", pokemonName);
@@ -159,12 +147,120 @@ export function collectBattleData() {
 		const moves1 = getLegalMovesFor(pokemon1);
 		for (let mi1 = 0; mi1 < moves1.length; mi1++) {
 			const move1 = moves1[mi1];
-			if (allBattleDataCollected(targetRuns, pokemon1, move1, pi1, mi1)) {
+			if (allBattleDataCollected("collectedStats", targetRuns, pokemon1, move1, pi1, mi1)) {
 				console.log(`Skipping ${pokemon1} with ${move1}, all data collected`);
 			}
-			collectBattleDataForChoice(pokemon1, move1, pi1, mi1, targetRuns);
+			collectBattleDataForChoice("collectedStats", pokemon1, move1, pi1, mi1, (_p, _m) => true, targetRuns);
 		}
 	}
+}
+
+const NUM_WORKERS_FOR_TARGETED = 8;
+function collectTargeted(statsDirectory: string, combatants: string[], mode: TargetedWorkerMode, sampleSizeToReach: number) {
+	if (!fs.existsSync(statsDirectory)) {
+		fs.mkdirSync(statsDirectory);
+	}
+	if (fs.readdirSync(statsDirectory).length < 2) {
+		// Make the files pre-emptively, so enumerating movesets is easier for the analyzer
+		for (const pokemon of gen1PokemonNames) {
+			for (const move of getLegalMovesFor(pokemon)) {
+				makeEmptyFileIfAbsent(statsDirectory, pokemon, move);
+			}
+		}
+	}
+
+	// Divvy up work to workers
+	const combatantsToDivvy: string[] = [];
+	if (mode === "among") {
+		combatantsToDivvy.push(...combatants);
+	} else if (mode === "outside") {
+		for (const pokemon of gen1PokemonNames) {
+			for (const move of getLegalMovesFor(pokemon)) {
+				combatantsToDivvy.push(`${pokemon}_${move}`);
+			}
+		}
+	} else {
+		assertNever(mode);
+	}
+	const partitions = [] as string[][];
+	const numWorkers = NUM_WORKERS_FOR_TARGETED;
+	for (let i = 0; i < numWorkers; i++) {
+		partitions.push([]);
+	}
+	// TODO: Would be nice to weight these better -- snake draft?
+	for (let i = 0; i < combatantsToDivvy.length; i++) {
+		const assignedWorker = i % numWorkers;
+		partitions[assignedWorker].push(combatantsToDivvy[i]);
+	}
+
+	// Start the workers, let them run
+	for (let i = 0; i < numWorkers; i++) {
+		if (partitions[i].length === 0) {
+			continue;
+		}
+		child_process.execFile("node", ["dist/sim/tools/targeted-run-worker.js",
+				// Arguments for targetedRunWorkerMain just below
+				statsDirectory,
+				JSON.stringify(combatants),
+				mode,
+				`${sampleSizeToReach}`,
+				JSON.stringify(partitions[i])],
+		{maxBuffer: 50 * 1024 * 1024},
+		(error, stdout, stderr) => {
+				console.log(`Finished worker process ${i}`);
+				if (error) {
+					console.log("There was an error: ", error);
+					throw error;
+				}
+			});
+	}
+}
+
+export function targetedRunWorkerMain(args: string[]) {
+	if (args.length !== 5) {
+		throw new Error("Expected exactly 5 args to the targeted run (per-thread) worker");
+	}
+	const statsDirectory = args[0];
+	const combatantsOfInterest = new Set<String>(JSON.parse(args[1]) as string[]);
+	const mode = validateTargetedWorkerMode(args[2]);
+	const sampleSizeToReach = Number.parseInt(args[3]);
+	const combatantKeysToTest = JSON.parse(args[4]) as string[];
+
+	for (const combatantKey of combatantKeysToTest) {
+		const isOfInterest = combatantsOfInterest.has(combatantKey);
+		if (!isOfInterest && mode === "among") {
+			// Generally shouldn't happen...
+			console.error(`Got assigned non-ingroup combatant ${combatantKey} but the mode is 'among'`);
+			continue;
+		}
+		const [pokemon, move] = combatantKey.split("_", 2);
+		const pi1 = gen1PokemonNames.indexOf(pokemon);
+		const mi1 = getLegalMovesFor(pokemon).indexOf(move);
+		if (pi1 < 0 || mi1 < 0) {
+			throw new Error(`Something's wrong: ${pokemon}, ${move}, ${pi1}, ${mi1}`);
+		}
+		let opponentPassFilter: (p: string, m: string) => boolean;
+		if (mode === "among") {
+			opponentPassFilter = (p: string, m: string) => combatantsOfInterest.has(`${p}_${m}`);
+		} else if (mode === "outside") {
+			if (isOfInterest) {
+				opponentPassFilter = (_p: string, _m: string) => true;
+			} else {
+				opponentPassFilter = (p: string, m: string) => combatantsOfInterest.has(`${p}_${m}`);
+			}
+		} else {
+			assertNever(mode);
+		}
+		collectBattleDataForChoice(statsDirectory, pokemon, move, pi1, mi1, opponentPassFilter, sampleSizeToReach);
+	}
+}
+
+type TargetedWorkerMode = "among" | "outside";
+function validateTargetedWorkerMode(arg: string): TargetedWorkerMode {
+	if (arg === "among" || arg === "outside") {
+		return arg;
+	}
+	throw new Error(`Unrecognized mode ${arg}`);
 }
 
 export function collectBattleDataMultiProcess() {
@@ -192,10 +288,10 @@ export function collectBattleDataMultiProcess() {
 
 		const [pokemon, move] = combos[nextIndexToTest];
 		nextIndexToTest++;
-		if (allBattleDataCollected(targetRuns, pokemon, move)) {
+		if (allBattleDataCollected("collectedStats", targetRuns, pokemon, move)) {
 			console.log(`Skipping ${pokemon} with ${move}; already fully tested`);
 			// Make the file even if nothing changed, so enumerating movesets is easier for the analyzer
-			makeEmptyFileIfAbsent(pokemon, move);
+			makeEmptyFileIfAbsent("collectedStats", pokemon, move);
 
 			setTimeout(spawnNextWorker, 0);
 			return;
@@ -203,7 +299,7 @@ export function collectBattleDataMultiProcess() {
 
 		console.log(`Starting a process for ${pokemon} with ${move}`)
 		spareThreads--;
-		child_process.execFile("node", [".sim-dist/tools/single-stat-collector.js"], {
+		child_process.execFile("node", ["dist/sim/tools/single-stat-collector.js"], {
 			maxBuffer: 50 * 1024 * 1024,
 			env: { ...process.env,
 				CHOSEN_POKEMON: pokemon,
@@ -248,18 +344,17 @@ export function singleChoiceRunner() {
 	if (pi1 < 0 || mi1 < 0) {
 		throw new Error(`Something's wrong: ${pokemon}, ${move}, ${pi1}, ${mi1}`);
 	}
-	collectBattleDataForChoice(pokemon, move, pi1, mi1, targetRuns);
+	collectBattleDataForChoice("collectedStats", pokemon, move, pi1, mi1, (_p, _m) => true, targetRuns);
 }
 
-function allBattleDataCollected(targetRuns: number, pokemon1: string, move1: string, pi1?: number, mi1?: number): boolean {
+function allBattleDataCollected(collectedStatsPath: string, targetRuns: number, pokemon1: string, move1: string, pi1?: number, mi1?: number): boolean {
 	if (pi1 === undefined) {
 		pi1 = gen1PokemonNames.indexOf(pokemon1);
 	}
 	if (mi1 === undefined) {
 		mi1 = getLegalMovesFor(pokemon1).indexOf(move1);
 	}
-	const alreadyInteresting = opomsOfInterest.has(pokemon1 + " " + move1);
-	const winCountsByOpponent = loadExistingWinCountsByOpponent(pokemon1, move1);
+	const winCountsByOpponent = loadExistingWinCountsByOpponent(collectedStatsPath, pokemon1, move1);
 	for (let pi2 = pi1; pi2 < gen1PokemonNames.length; pi2++) {
 		const pokemon2 = gen1PokemonNames[pi2];
 		const moves2 = getLegalMovesFor(pokemon2);
@@ -268,13 +363,7 @@ function allBattleDataCollected(targetRuns: number, pokemon1: string, move1: str
 		for (let mi2 = movesStartingPoint; mi2 < moves2.length; mi2++) {
 			const move2 = moves2[mi2];
 
-			const oppId = pokemon2 + " " + move2;
-			// && here for "one of the two Pokemon must be of interest"
-			// || here for "both Pokemon must be of interest"
-			// (also need to tweak in one other place)
-			if (!alreadyInteresting || !opomsOfInterest.has(oppId)) {
-				continue;
-			}
+			const oppId = pokemon2 + "_" + move2;
 			const winCounts: WinCounts = oppId in winCountsByOpponent ? winCountsByOpponent[oppId] : {p1: 0, p2: 0, dnf: 0};
 			const alreadyRunCount = winCounts.p1 + winCounts.p2 + winCounts.dnf;
 			if (alreadyRunCount < targetRuns) {
@@ -328,9 +417,10 @@ opomsOfInterest.add("snorlax bodyslam");
 opomsOfInterest.add("vaporeon hydropump");
 
 
-function collectBattleDataForChoice(pokemon1: string, move1: string, pi1: number, mi1: number, targetRuns: number) {
-	const alreadyInteresting = opomsOfInterest.has(pokemon1 + " " + move1);
-	const winCountsByOpponent = loadExistingWinCountsByOpponent(pokemon1, move1);
+function collectBattleDataForChoice(collectedStatsPath: string, pokemon1: string, move1: string, pi1: number, mi1: number,
+	opponentsPassFilter: (p2: string, m2: string) => boolean,
+	targetRuns: number) {
+	const winCountsByOpponent = loadExistingWinCountsByOpponent(collectedStatsPath, pokemon1, move1);
 	for (let pi2 = pi1; pi2 < gen1PokemonNames.length; pi2++) {
 		const pokemon2 = gen1PokemonNames[pi2];
 		const moves2 = getLegalMovesFor(pokemon2);
@@ -338,11 +428,12 @@ function collectBattleDataForChoice(pokemon1: string, move1: string, pi1: number
 		let anythingChanged = false;
 		for (let mi2 = movesStartingPoint; mi2 < moves2.length; mi2++) {
 			const move2 = moves2[mi2];
-			const oppId = pokemon2 + " " + move2;
 
-			if (!alreadyInteresting || !opomsOfInterest.has(oppId)) {
+			if (!opponentsPassFilter(pokemon2, move2)) {
 				continue;
 			}
+
+			const oppId = pokemon2 + "_" + move2;
 
 			const winCounts: WinCounts = oppId in winCountsByOpponent ? winCountsByOpponent[oppId] : {p1: 0, p2: 0, dnf: 0};
 			const alreadyRunCount = winCounts.p1 + winCounts.p2 + winCounts.dnf;
@@ -364,7 +455,7 @@ function collectBattleDataForChoice(pokemon1: string, move1: string, pi1: number
 		// console.log(`So far: ${JSON.stringify(winCountsByOpponent)}`);
 		if (anythingChanged) {
 			console.log("Saving...");
-			writeToFile(pokemon1, move1, winCountsByOpponent);
+			writeToFile(collectedStatsPath, pokemon1, move1, winCountsByOpponent);
 		}
 	}
 }
@@ -372,8 +463,8 @@ function collectBattleDataForChoice(pokemon1: string, move1: string, pi1: number
 type WinCounts = { p1: number, p2: number, dnf: number };
 type WinCountsByOpp = { [opponent: string]: WinCounts };
 
-function loadExistingWinCountsByOpponent(pokemon: string, move: string): WinCountsByOpp {
-	const path = `collectedStats/${pokemon}_${move}`;
+function loadExistingWinCountsByOpponent(collectedStatsPath: string, pokemon: string, move: string): WinCountsByOpp {
+	const path = `${collectedStatsPath}/${pokemon}_${move}`;
 	if (!fs.existsSync(path)) {
 		return {};
 	}
@@ -382,13 +473,12 @@ function loadExistingWinCountsByOpponent(pokemon: string, move: string): WinCoun
 	for (const line of fileText.split("\n")) {
 		const lineParts = line.split(" ");
 		if (lineParts.length === 5) {
-			const oppPokemon = lineParts[0];
-			const oppMove = lineParts[1];
-			const p1 = parseInt(lineParts[2]);
-			const p2 = parseInt(lineParts[3]);
-			const dnf = parseInt(lineParts[4]);
+			const oppCombatant = lineParts[0];
+			const p1 = parseInt(lineParts[1]);
+			const p2 = parseInt(lineParts[2]);
+			const dnf = parseInt(lineParts[3]);
 
-			wcbo[oppPokemon + " " + oppMove] = { p1, p2, dnf };
+			wcbo[oppCombatant] = { p1, p2, dnf };
 		} else if (lineParts.length > 1) {
 			console.log("Invalid line in file " + path);
 		}
@@ -396,21 +486,21 @@ function loadExistingWinCountsByOpponent(pokemon: string, move: string): WinCoun
 	return wcbo;
 }
 
-function makeEmptyFileIfAbsent(pokemon: string, move: string) {
-	if (!fs.existsSync("collectedStats")) {
-		fs.mkdirSync("collectedStats");
+function makeEmptyFileIfAbsent(collectedStatsPath: string, pokemon: string, move: string) {
+	if (!fs.existsSync(collectedStatsPath)) {
+		fs.mkdirSync(collectedStatsPath);
 	}
-	const path = `collectedStats/${pokemon}_${move}`;
+	const path = `${collectedStatsPath}/${pokemon}_${move}`;
 	if (!fs.existsSync(path)) {
 		fs.writeFileSync(path, "");
 	}
 }
 
-function writeToFile(pokemon: string, move: string, winCountsByOpponent: WinCountsByOpp) {
-	if (!fs.existsSync("collectedStats")) {
-		fs.mkdirSync("collectedStats");
+function writeToFile(collectedStatsPath: string, pokemon: string, move: string, winCountsByOpponent: WinCountsByOpp) {
+	if (!fs.existsSync(collectedStatsPath)) {
+		fs.mkdirSync(collectedStatsPath);
 	}
-	const path = `collectedStats/${pokemon}_${move}`;
+	const path = `${collectedStatsPath}/${pokemon}_${move}`;
 	const contentLines: string[] = [];
 	for (const opponent in winCountsByOpponent) {
 		const winCounts = winCountsByOpponent[opponent];
@@ -422,8 +512,9 @@ function writeToFile(pokemon: string, move: string, winCountsByOpponent: WinCoun
 }
 
 export interface TargetedCollectorArgs {
-	gen: number,
-	type: string,
+	gen: number;
+	type: string;
+	extraArgs: string[];
 }
 
 export function runTargetedCollection(args: TargetedCollectorArgs) {
@@ -431,9 +522,22 @@ export function runTargetedCollection(args: TargetedCollectorArgs) {
 		throw new Error(`Generation ${args.gen} not supported`);
 	}
 
-	if (args.type === "singleelim") {
+	if (args.type === "single_elim") {
+		if (args.extraArgs.length !== 0) {
+			throw new Error(`Expected zero extra args when using single_elim`);
+		}
 		const winner = getSingleElimTournamentWinner();
 		console.log(`winner: ${winner[0]}_${winner[1]}`);
+	} else if (args.type === "collect_stats") {
+		if (args.extraArgs.length !== 2) {
+			throw new Error(`Expected four extra args when using collect_stats`);
+		}
+		const statsDir = args.extraArgs[0];
+		const combatants = JSON.parse(args.extraArgs[1]) as string[];
+		const mode = validateTargetedWorkerMode(args.extraArgs[2]);
+		const sampleSizeToReach = Number.parseInt(args.extraArgs[3]);
+
+		collectTargeted(statsDir, combatants, mode, sampleSizeToReach);
 	} else {
 		throw new Error(`Unexpected type ${args.type}`);
 	}
