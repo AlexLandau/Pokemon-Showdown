@@ -441,7 +441,7 @@ function collectBattleDataForChoice(collectedStatsPath: string, pokemon1: string
 				continue;
 			}
 			anythingChanged = true;
-			console.log(`${pokemon1} with ${move1} (PP ${Dex.getMove(move1).pp}) vs. ${pokemon2} with ${move2} (PP ${Dex.getMove(move2).pp})`);
+			console.log(`${pokemon1} with ${move1} vs. ${pokemon2} with ${move2}`);
 
 			for (let i = alreadyRunCount; i < targetRuns; i++) {
 				const winner = getBattleWinner(pokemon1, move1, pokemon2, move2);
@@ -472,7 +472,7 @@ function loadExistingWinCountsByOpponent(collectedStatsPath: string, pokemon: st
 	const wcbo: WinCountsByOpp = {};
 	for (const line of fileText.split("\n")) {
 		const lineParts = line.split(" ");
-		if (lineParts.length === 5) {
+		if (lineParts.length === 4) {
 			const oppCombatant = lineParts[0];
 			const p1 = parseInt(lineParts[1]);
 			const p2 = parseInt(lineParts[2]);
@@ -529,7 +529,7 @@ export function runTargetedCollection(args: TargetedCollectorArgs) {
 		const winner = getSingleElimTournamentWinner();
 		console.log(`winner: ${winner[0]}_${winner[1]}`);
 	} else if (args.type === "collect_stats") {
-		if (args.extraArgs.length !== 2) {
+		if (args.extraArgs.length !== 4) {
 			throw new Error(`Expected four extra args when using collect_stats`);
 		}
 		const statsDir = args.extraArgs[0];
