@@ -1,3 +1,4 @@
+import { shuffle } from "../../lib/utils";
 import { Battle } from "../battle";
 import { Dex, ModdedDex } from "../dex";
 import * as child_process from "child_process";
@@ -40,7 +41,10 @@ function pickRandomMove(pokemonName: string): string {
 
 // TODO: Maybe profile to see if this is worth caching
 function getLegalMovesFor(pokemonName: string): string[] {
+	// console.log("mon is ", pokemonName);
 	const learnset = md.data.Learnsets[pokemonName].learnset;
+	// console.log("learnset is ", learnset);
+	// md.data.Learnsets[pokemonName].learnset;
 	const moves: Set<string> = new Set();
 	for (const moveName in learnset) {
 		if (learnset[moveName].find(moveSource => moveSource.startsWith("1")) != undefined) {
@@ -48,7 +52,7 @@ function getLegalMovesFor(pokemonName: string): string[] {
 		}
 	}
 	// Check for moves only learnable before evolving, which are not in the learnset
-	const prevo = md.getTemplate(pokemonName).prevo;
+	const prevo = md.toID(md.species.get(pokemonName).prevo);
 	if (prevo) {
 		for (const prevoMove of getLegalMovesFor(prevo)) {
 			moves.add(prevoMove);
@@ -108,15 +112,17 @@ export function getBattleWinner(pokemon1: string, move1: string, pokemon2: strin
 	};
 
 	Dex.mod("gen1"); // THIS HAS SIDE EFFECTS, DO NOT REMOVE
+	const moddedDex = Dex.forFormat("[Gen 1] Custom Game");
 	const battleOptions = {
-		formatid: Dex.getId("gen1customgame"),
+		formatid: moddedDex.toID("[Gen 1] Custom Game"),
 		p1: {name: "p1", team: [pset1]},
 		p2: {name: "p2", team: [pset2]},
 		strictChoices: true
 	};
 	const battle = new Battle(battleOptions);
 
-	battle.start();
+	// console.log(`About to start battle, ${pokemon1}/${move1} vs. ${pokemon2}/${move2}`);
+	// battle.start();
 
 	while (!battle.ended) {
 		// battle.makeChoices(`move ${move1}`, `move ${move2}`);
@@ -138,10 +144,10 @@ export function getBattleWinner(pokemon1: string, move1: string, pokemon2: strin
 	battle.destroy();
 	if (winner === "p1" || winner === "p2") {
 		return winner;
-	} else if (winner === undefined) {
+	} else if (winner === undefined || winner === "") {
 		return "dnf";
 	}
-	throw new Error(`Unexpected winner value ${winner}`);
+	throw new Error(`Unexpected winner value '${winner}'`);
 }
 
 
@@ -398,4 +404,73 @@ function writeToFile(pokemon: string, move: string, winCountsByOpponent: WinCoun
 	}
 	const contentText = contentLines.join("\n");
 	fs.writeFileSync(path, contentText);
+}
+
+export interface TargetedCollectorArgs {
+	gen: number,
+	type: string,
+}
+
+export function runTargetedCollection(args: TargetedCollectorArgs) {
+	if (args.gen !== 1) {
+		throw new Error(`Generation ${args.gen} not supported`);
+	}
+
+	if (args.type === "singleelim") {
+		const winner = getSingleElimTournamentWinner();
+		console.log(`winner: ${winner[0]}_${winner[1]}`);
+	} else {
+		throw new Error(`Unexpected type ${args.type}`);
+	}
+}
+
+function assertNever(input: never): never {
+	throw new Error(`Expected to never get here, but input was ${input}`);
+}
+
+function getSingleElimTournamentWinner(): Combatant {
+	const allCombatants = listAllCombatants();
+	let curRound = [...allCombatants];
+	shuffle(curRound);
+	while (curRound.length > 1) {
+		console.log(`Running a round of single-elimination with ${curRound.length} left...`);
+		const nextRound = [] as Combatant[];
+		for (let i = 0; i + 1 < curRound.length; i += 2) {
+			const left = curRound[i];
+			const right = curRound[i + 1];
+			if (curRound.length <= 8) {
+				console.log(`About to start battle, ${left[0]}/${left[1]} vs. ${right[0]}/${right[1]}`);
+			}
+			const winner = getBattleWinner(left[0], left[1], right[0], right[1]);
+			if (winner === "p1") {
+				nextRound.push(left);
+			} else if (winner === "p2") {
+				nextRound.push(right);
+			} else {
+				// Pick one at random to advance
+				if (Math.random() < 0.5) {
+					nextRound.push(left);
+				} else {
+					nextRound.push(right);
+				}
+			}
+		}
+		if (curRound.length % 2 === 1) {
+			nextRound.push(curRound[curRound.length - 1]);
+		}
+		curRound = nextRound;
+	}
+	console.log(`Winner of the single-elimination tournament was ${curRound[0][0]} with ${curRound[0][1]}`);
+	return curRound[0];
+}
+
+type Combatant = [pokemon: string, move: string];
+function listAllCombatants(): Combatant[] {
+	const result: Combatant[] = [];
+	for (const pokemon of gen1PokemonNames) {
+		for (const move of getLegalMovesFor(pokemon)) {
+			result.push([pokemon, move]);
+		}
+	}
+	return result;
 }
