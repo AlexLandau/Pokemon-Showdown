@@ -216,6 +216,45 @@ function collectTargeted(statsDirectory: string, combatants: string[], mode: Tar
 	}
 }
 
+function collectSpecificMatchups(statsDir: string, matchupsWithTargets: MatchupWithTarget[]) {
+	// TODO: Parallelize
+	for (const matchup of matchupsWithTargets) {
+		const [left, right, sampleSizeToReach] = matchup;
+		const actualLeft = pickLeftmostCombatant(left, right);
+		const actualRight = (left === actualLeft) ? right : left;
+		const [pokemon, move] = actualLeft.split("_", 2);
+		const pi1 = gen1PokemonNames.indexOf(pokemon);
+		const mi1 = getLegalMovesFor(pokemon).indexOf(move);
+		if (pi1 < 0 || mi1 < 0) {
+			throw new Error(`Something's wrong: ${pokemon}, ${move}, ${pi1}, ${mi1}`);
+		}
+		const [opp_p, opp_m] = actualRight.split("_", 2);
+		let opponentPassFilter = (p: string, m: string) => p === opp_p && m === opp_m;
+		collectBattleDataForChoice(statsDir, pokemon, move, pi1, mi1, opponentPassFilter, sampleSizeToReach);
+	}
+}
+
+function pickLeftmostCombatant(combatant1: string, combatant2: string): string {
+	const [p1, m1] = combatant1.split("_", 2);
+	const [p2, m2] = combatant2.split("_", 2);
+	const pi1 = gen1PokemonNames.indexOf(p1);
+	const pi2 = gen1PokemonNames.indexOf(p2);
+	if (pi1 < pi2) {
+		return combatant1;
+	}
+	if (pi2 < pi1) {
+		return combatant2;
+	}
+	// Pokemon are the same, check the moves
+	const moves = getLegalMovesFor(p1);
+	const mi1 = moves.indexOf(m1);
+	const mi2 = moves.indexOf(m2);
+	if (mi1 <= mi2) {
+		return combatant1;
+	}
+	return combatant2;
+}
+
 export function targetedRunWorkerMain(args: string[]) {
 	if (args.length !== 5) {
 		throw new Error("Expected exactly 5 args to the targeted run (per-thread) worker");
@@ -517,6 +556,8 @@ export interface TargetedCollectorArgs {
 	extraArgs: string[];
 }
 
+export type MatchupWithTarget = [left: string, right: string, target: number];
+
 export function runTargetedCollection(args: TargetedCollectorArgs) {
 	if (args.gen !== 1) {
 		throw new Error(`Generation ${args.gen} not supported`);
@@ -538,6 +579,14 @@ export function runTargetedCollection(args: TargetedCollectorArgs) {
 		const sampleSizeToReach = Number.parseInt(args.extraArgs[3]);
 
 		collectTargeted(statsDir, combatants, mode, sampleSizeToReach);
+	} else if (args.type === "specific_matchups") {
+		if (args.extraArgs.length !== 2) {
+			throw new Error(`Expected two extra args when using collect_stats`);
+		}
+		const statsDir = args.extraArgs[0];
+		const matchupsWithTargets = JSON.parse(args.extraArgs[1]) as MatchupWithTarget[];
+
+		collectSpecificMatchups(statsDir, matchupsWithTargets);
 	} else {
 		throw new Error(`Unexpected type ${args.type}`);
 	}
