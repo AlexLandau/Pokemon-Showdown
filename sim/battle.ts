@@ -59,7 +59,7 @@ export function extractChannelMessages<T extends ChannelID | -1>(message: string
 }
 
 
-interface BattleOptions {
+export interface BattleOptions {
 	format?: Format;
 	formatid: ID;
 	/** Output callback */

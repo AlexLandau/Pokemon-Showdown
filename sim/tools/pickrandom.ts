@@ -1,15 +1,22 @@
 import { shuffle } from "../../lib/utils";
-import { Battle } from "../battle";
+import { Battle, BattleOptions } from "../battle";
 import { Dex, ModdedDex } from "../dex";
 import * as child_process from "child_process";
 import * as fs from "fs";
 
 // TODO: Case to look into: Venusaur with Solarbeam losing to Jigglypuff with Disable
 
-const md: ModdedDex = Dex.mod("gen1");
-const pd = md.data.Pokedex;
+const gen1Dex: ModdedDex = Dex.mod("gen1");
 
-const gen1PokemonNames = Object.keys(pd).slice(1, 152);
+function getDex(gen: GenString): ModdedDex {
+	if (gen === "gen1") {
+		return gen1Dex;
+	} else {
+		assertNever(gen);
+	}
+}
+
+const gen1PokemonNames = Object.keys(gen1Dex.data.Pokedex).slice(1, 152);
 function getAllPokemonNames(gen: GenString): string[] {
 	if (gen === "gen1") {
 		return gen1PokemonNames;
@@ -18,8 +25,6 @@ function getAllPokemonNames(gen: GenString): string[] {
 	}
 }
 
-const allPokemonNamesAllGens = Object.keys(pd);
-
 function getRandomInt(min: number, max: number) {
 	min = Math.ceil(min);
 	max = Math.floor(max);
@@ -27,9 +32,10 @@ function getRandomInt(min: number, max: number) {
 }
 
 // TODO: Maybe profile to see if this is worth caching
-function getLegalMovesFor(pokemonName: string): string[] {
+function getLegalMovesFor(pokemonName: string, gen: GenString): string[] {
+	const dex = getDex(gen);
 	// console.log("mon is ", pokemonName);
-	const learnset = md.data.Learnsets[pokemonName].learnset;
+	const learnset = dex.data.Learnsets[pokemonName].learnset;
 	// console.log("learnset is ", learnset);
 	// md.data.Learnsets[pokemonName].learnset;
 	const moves: Set<string> = new Set();
@@ -39,9 +45,9 @@ function getLegalMovesFor(pokemonName: string): string[] {
 		}
 	}
 	// Check for moves only learnable before evolving, which are not in the learnset
-	const prevo = md.toID(md.species.get(pokemonName).prevo);
+	const prevo = dex.toID(dex.species.get(pokemonName).prevo);
 	if (prevo) {
-		for (const prevoMove of getLegalMovesFor(prevo)) {
+		for (const prevoMove of getLegalMovesFor(prevo, gen)) {
 			moves.add(prevoMove);
 		}
 	}
@@ -54,7 +60,7 @@ const perfectEvs: StatsTable = {hp: 255, atk: 255, def: 255, spe: 255, spa: 255,
 const perfectIvs: StatsTable = {hp: 30, atk: 30, def: 30, spe: 30, spa: 30, spd: 30};
 
 
-export function getBattleWinner(pokemon1: string, move1: string, pokemon2: string, move2: string): "p1" | "p2" | "dnf" {
+export function getBattleWinner(pokemon1: string, move1: string, pokemon2: string, move2: string, gen: GenString): "p1" | "p2" | "dnf" {
 	const pset1: PokemonSet = {
 		name: pokemon1,
 		species: pokemon1,
@@ -81,14 +87,22 @@ export function getBattleWinner(pokemon1: string, move1: string, pokemon2: strin
 		level: 100
 	};
 
-	Dex.mod("gen1"); // THIS HAS SIDE EFFECTS, DO NOT REMOVE
-	const moddedDex = Dex.forFormat("[Gen 1] Custom Game");
-	const battleOptions = {
-		formatid: moddedDex.toID("[Gen 1] Custom Game"),
-		p1: {name: "p1", team: [pset1]},
-		p2: {name: "p2", team: [pset2]},
-		strictChoices: true
-	};
+	let battleOptions: BattleOptions | undefined = undefined;
+	if (gen === "gen1") {
+		Dex.mod("gen1"); // THIS HAS SIDE EFFECTS, DO NOT REMOVE
+		const moddedDex = Dex.forFormat("[Gen 1] Custom Game");
+		battleOptions = {
+			formatid: moddedDex.toID("[Gen 1] Custom Game"),
+			p1: {name: "p1", team: [pset1]},
+			p2: {name: "p2", team: [pset2]},
+			strictChoices: true
+		};
+	} else {
+		assertNever(gen);
+	}
+	if (battleOptions == undefined) {
+		throw new Error(`Unexpected lack of battleOptions, gen was ${gen}`);
+	}
 	const battle = new Battle(battleOptions);
 
 	// console.log(`About to start battle, ${pokemon1}/${move1} vs. ${pokemon2}/${move2}`);
@@ -129,7 +143,7 @@ function collectTargeted(statsDirectory: string, gen: GenString, combatants: str
 	if (fs.readdirSync(statsDirectory).length < 2) {
 		// Make the files pre-emptively, so enumerating movesets is easier for the analyzer
 		for (const pokemon of getAllPokemonNames(gen)) {
-			for (const move of getLegalMovesFor(pokemon)) {
+			for (const move of getLegalMovesFor(pokemon, gen)) {
 				makeEmptyFileIfAbsent(statsDirectory, pokemon, move);
 			}
 		}
@@ -141,7 +155,7 @@ function collectTargeted(statsDirectory: string, gen: GenString, combatants: str
 		combatantsToDivvy.push(...combatants);
 	} else if (mode === "outside") {
 		for (const pokemon of getAllPokemonNames(gen)) {
-			for (const move of getLegalMovesFor(pokemon)) {
+			for (const move of getLegalMovesFor(pokemon, gen)) {
 				combatantsToDivvy.push(`${pokemon}_${move}`);
 			}
 		}
@@ -187,11 +201,11 @@ function collectSpecificMatchups(statsDir: string, gen: GenString, matchupsWithT
 	// TODO: Parallelize
 	for (const matchup of matchupsWithTargets) {
 		const [left, right, sampleSizeToReach] = matchup;
-		const actualLeft = pickLeftmostCombatant(left, right);
+		const actualLeft = pickLeftmostCombatant(left, right, gen);
 		const actualRight = (left === actualLeft) ? right : left;
 		const [pokemon, move] = actualLeft.split("_", 2);
 		const pi1 = getAllPokemonNames(gen).indexOf(pokemon);
-		const mi1 = getLegalMovesFor(pokemon).indexOf(move);
+		const mi1 = getLegalMovesFor(pokemon, gen).indexOf(move);
 		if (pi1 < 0 || mi1 < 0) {
 			throw new Error(`Something's wrong: ${pokemon}, ${move}, ${pi1}, ${mi1}`);
 		}
@@ -201,11 +215,12 @@ function collectSpecificMatchups(statsDir: string, gen: GenString, matchupsWithT
 	}
 }
 
-function pickLeftmostCombatant(combatant1: string, combatant2: string): string {
+function pickLeftmostCombatant(combatant1: string, combatant2: string, gen: GenString): string {
+	const allPokemonNames = getAllPokemonNames(gen);
 	const [p1, m1] = combatant1.split("_", 2);
 	const [p2, m2] = combatant2.split("_", 2);
-	const pi1 = allPokemonNamesAllGens.indexOf(p1);
-	const pi2 = allPokemonNamesAllGens.indexOf(p2);
+	const pi1 = allPokemonNames.indexOf(p1);
+	const pi2 = allPokemonNames.indexOf(p2);
 	if (pi1 < pi2) {
 		return combatant1;
 	}
@@ -213,7 +228,7 @@ function pickLeftmostCombatant(combatant1: string, combatant2: string): string {
 		return combatant2;
 	}
 	// Pokemon are the same, check the moves
-	const moves = getLegalMovesFor(p1);
+	const moves = getLegalMovesFor(p1, gen);
 	const mi1 = moves.indexOf(m1);
 	const mi2 = moves.indexOf(m2);
 	if (mi1 <= mi2) {
@@ -233,6 +248,8 @@ export function targetedRunWorkerMain(args: string[]) {
 	const sampleSizeToReach = Number.parseInt(args[4]);
 	const combatantKeysToTest = JSON.parse(args[5]) as string[];
 
+	const allPokemonNames = getAllPokemonNames(gen);
+
 	for (const combatantKey of combatantKeysToTest) {
 		const isOfInterest = combatantsOfInterest.has(combatantKey);
 		if (!isOfInterest && mode === "among") {
@@ -241,8 +258,8 @@ export function targetedRunWorkerMain(args: string[]) {
 			continue;
 		}
 		const [pokemon, move] = combatantKey.split("_", 2);
-		const pi1 = allPokemonNamesAllGens.indexOf(pokemon);
-		const mi1 = getLegalMovesFor(pokemon).indexOf(move);
+		const pi1 = allPokemonNames.indexOf(pokemon);
+		const mi1 = getLegalMovesFor(pokemon, gen).indexOf(move);
 		if (pi1 < 0 || mi1 < 0) {
 			throw new Error(`Something's wrong: ${pokemon}, ${move}, ${pi1}, ${mi1}`);
 		}
@@ -276,7 +293,7 @@ function collectBattleDataForChoice(collectedStatsPath: string, gen: GenString, 
 	const winCountsByOpponent = loadExistingWinCountsByOpponent(collectedStatsPath, pokemon1, move1);
 	for (let pi2 = pi1; pi2 < allPokemonNames.length; pi2++) {
 		const pokemon2 = allPokemonNames[pi2];
-		const moves2 = getLegalMovesFor(pokemon2);
+		const moves2 = getLegalMovesFor(pokemon2, gen);
 		const movesStartingPoint = pi1 === pi2 ? mi1 + 1 : 0;
 		let anythingChanged = false;
 		for (let mi2 = movesStartingPoint; mi2 < moves2.length; mi2++) {
@@ -297,7 +314,7 @@ function collectBattleDataForChoice(collectedStatsPath: string, gen: GenString, 
 			console.log(`${pokemon1} with ${move1} vs. ${pokemon2} with ${move2}`);
 
 			for (let i = alreadyRunCount; i < targetRuns; i++) {
-				const winner = getBattleWinner(pokemon1, move1, pokemon2, move2);
+				const winner = getBattleWinner(pokemon1, move1, pokemon2, move2, gen);
 				if (winner != undefined) {
 					winCounts[winner as "p1" | "p2"]++;
 				}
@@ -426,7 +443,7 @@ function getSingleElimTournamentWinner(gen: GenString): Combatant {
 			if (curRound.length <= 8) {
 				console.log(`About to start battle, ${left[0]}/${left[1]} vs. ${right[0]}/${right[1]}`);
 			}
-			const winner = getBattleWinner(left[0], left[1], right[0], right[1]);
+			const winner = getBattleWinner(left[0], left[1], right[0], right[1], gen);
 			if (winner === "p1") {
 				nextRound.push(left);
 			} else if (winner === "p2") {
@@ -453,7 +470,7 @@ type Combatant = [pokemon: string, move: string];
 function listAllCombatants(gen: GenString): Combatant[] {
 	const result: Combatant[] = [];
 	for (const pokemon of getAllPokemonNames(gen)) {
-		for (const move of getLegalMovesFor(pokemon)) {
+		for (const move of getLegalMovesFor(pokemon, gen)) {
 			result.push([pokemon, move]);
 		}
 	}
