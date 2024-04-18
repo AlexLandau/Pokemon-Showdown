@@ -17,6 +17,15 @@ const pd = md.data.Pokedex;
 // Dex.forFormat("gen1customgame");
 
 const gen1PokemonNames = Object.keys(pd).slice(1, 152);
+function getAllPokemonNames(gen: GenString): string[] {
+	if (gen === "gen1") {
+		return gen1PokemonNames;
+	} else {
+		assertNever(gen);
+	}
+}
+
+const allPokemonNamesAllGens = Object.keys(pd);
 
 // console.log(JSON.stringify(somePokemonNames));
 // console.log(somePokemonNames.length);
@@ -140,29 +149,29 @@ export function getBattleWinner(pokemon1: string, move1: string, pokemon2: strin
 
 
 // TODO: Use workers (or multiple processes, which looks pretty similar)
-export function collectBattleData() {
-	const targetRuns = 10;
-	for (let pi1 = 0; pi1 < gen1PokemonNames.length; pi1++) {
-		const pokemon1 = gen1PokemonNames[pi1];
-		const moves1 = getLegalMovesFor(pokemon1);
-		for (let mi1 = 0; mi1 < moves1.length; mi1++) {
-			const move1 = moves1[mi1];
-			if (allBattleDataCollected("collectedStats", targetRuns, pokemon1, move1, pi1, mi1)) {
-				console.log(`Skipping ${pokemon1} with ${move1}, all data collected`);
-			}
-			collectBattleDataForChoice("collectedStats", pokemon1, move1, pi1, mi1, (_p, _m) => true, targetRuns);
-		}
-	}
-}
+// export function collectBattleData() {
+// 	const targetRuns = 10;
+// 	for (let pi1 = 0; pi1 < gen1PokemonNames.length; pi1++) {
+// 		const pokemon1 = gen1PokemonNames[pi1];
+// 		const moves1 = getLegalMovesFor(pokemon1);
+// 		for (let mi1 = 0; mi1 < moves1.length; mi1++) {
+// 			const move1 = moves1[mi1];
+// 			if (allBattleDataCollected("collectedStats", targetRuns, pokemon1, move1, pi1, mi1)) {
+// 				console.log(`Skipping ${pokemon1} with ${move1}, all data collected`);
+// 			}
+// 			collectBattleDataForChoice("collectedStats", pokemon1, move1, pi1, mi1, (_p, _m) => true, targetRuns);
+// 		}
+// 	}
+// }
 
 const NUM_WORKERS_FOR_TARGETED = 8;
-function collectTargeted(statsDirectory: string, combatants: string[], mode: TargetedWorkerMode, sampleSizeToReach: number) {
+function collectTargeted(statsDirectory: string, gen: GenString, combatants: string[], mode: TargetedWorkerMode, sampleSizeToReach: number) {
 	if (!fs.existsSync(statsDirectory)) {
 		fs.mkdirSync(statsDirectory);
 	}
 	if (fs.readdirSync(statsDirectory).length < 2) {
 		// Make the files pre-emptively, so enumerating movesets is easier for the analyzer
-		for (const pokemon of gen1PokemonNames) {
+		for (const pokemon of getAllPokemonNames(gen)) {
 			for (const move of getLegalMovesFor(pokemon)) {
 				makeEmptyFileIfAbsent(statsDirectory, pokemon, move);
 			}
@@ -174,7 +183,7 @@ function collectTargeted(statsDirectory: string, combatants: string[], mode: Tar
 	if (mode === "among") {
 		combatantsToDivvy.push(...combatants);
 	} else if (mode === "outside") {
-		for (const pokemon of gen1PokemonNames) {
+		for (const pokemon of getAllPokemonNames(gen)) {
 			for (const move of getLegalMovesFor(pokemon)) {
 				combatantsToDivvy.push(`${pokemon}_${move}`);
 			}
@@ -201,6 +210,7 @@ function collectTargeted(statsDirectory: string, combatants: string[], mode: Tar
 		child_process.execFile("node", ["dist/sim/tools/targeted-run-worker.js",
 				// Arguments for targetedRunWorkerMain just below
 				statsDirectory,
+				gen,
 				JSON.stringify(combatants),
 				mode,
 				`${sampleSizeToReach}`,
@@ -216,29 +226,29 @@ function collectTargeted(statsDirectory: string, combatants: string[], mode: Tar
 	}
 }
 
-function collectSpecificMatchups(statsDir: string, matchupsWithTargets: MatchupWithTarget[]) {
+function collectSpecificMatchups(statsDir: string, gen: GenString, matchupsWithTargets: MatchupWithTarget[]) {
 	// TODO: Parallelize
 	for (const matchup of matchupsWithTargets) {
 		const [left, right, sampleSizeToReach] = matchup;
 		const actualLeft = pickLeftmostCombatant(left, right);
 		const actualRight = (left === actualLeft) ? right : left;
 		const [pokemon, move] = actualLeft.split("_", 2);
-		const pi1 = gen1PokemonNames.indexOf(pokemon);
+		const pi1 = getAllPokemonNames(gen).indexOf(pokemon);
 		const mi1 = getLegalMovesFor(pokemon).indexOf(move);
 		if (pi1 < 0 || mi1 < 0) {
 			throw new Error(`Something's wrong: ${pokemon}, ${move}, ${pi1}, ${mi1}`);
 		}
 		const [opp_p, opp_m] = actualRight.split("_", 2);
 		let opponentPassFilter = (p: string, m: string) => p === opp_p && m === opp_m;
-		collectBattleDataForChoice(statsDir, pokemon, move, pi1, mi1, opponentPassFilter, sampleSizeToReach);
+		collectBattleDataForChoice(statsDir, gen, pokemon, move, pi1, mi1, opponentPassFilter, sampleSizeToReach);
 	}
 }
 
 function pickLeftmostCombatant(combatant1: string, combatant2: string): string {
 	const [p1, m1] = combatant1.split("_", 2);
 	const [p2, m2] = combatant2.split("_", 2);
-	const pi1 = gen1PokemonNames.indexOf(p1);
-	const pi2 = gen1PokemonNames.indexOf(p2);
+	const pi1 = allPokemonNamesAllGens.indexOf(p1);
+	const pi2 = allPokemonNamesAllGens.indexOf(p2);
 	if (pi1 < pi2) {
 		return combatant1;
 	}
@@ -256,14 +266,15 @@ function pickLeftmostCombatant(combatant1: string, combatant2: string): string {
 }
 
 export function targetedRunWorkerMain(args: string[]) {
-	if (args.length !== 5) {
-		throw new Error("Expected exactly 5 args to the targeted run (per-thread) worker");
+	if (args.length !== 6) {
+		throw new Error("Expected exactly 6 args to the targeted run (per-thread) worker");
 	}
 	const statsDirectory = args[0];
-	const combatantsOfInterest = new Set<String>(JSON.parse(args[1]) as string[]);
-	const mode = validateTargetedWorkerMode(args[2]);
-	const sampleSizeToReach = Number.parseInt(args[3]);
-	const combatantKeysToTest = JSON.parse(args[4]) as string[];
+	const gen = args[1] as GenString;
+	const combatantsOfInterest = new Set<String>(JSON.parse(args[2]) as string[]);
+	const mode = validateTargetedWorkerMode(args[3]);
+	const sampleSizeToReach = Number.parseInt(args[4]);
+	const combatantKeysToTest = JSON.parse(args[5]) as string[];
 
 	for (const combatantKey of combatantKeysToTest) {
 		const isOfInterest = combatantsOfInterest.has(combatantKey);
@@ -273,7 +284,7 @@ export function targetedRunWorkerMain(args: string[]) {
 			continue;
 		}
 		const [pokemon, move] = combatantKey.split("_", 2);
-		const pi1 = gen1PokemonNames.indexOf(pokemon);
+		const pi1 = allPokemonNamesAllGens.indexOf(pokemon);
 		const mi1 = getLegalMovesFor(pokemon).indexOf(move);
 		if (pi1 < 0 || mi1 < 0) {
 			throw new Error(`Something's wrong: ${pokemon}, ${move}, ${pi1}, ${mi1}`);
@@ -290,7 +301,7 @@ export function targetedRunWorkerMain(args: string[]) {
 		} else {
 			assertNever(mode);
 		}
-		collectBattleDataForChoice(statsDirectory, pokemon, move, pi1, mi1, opponentPassFilter, sampleSizeToReach);
+		collectBattleDataForChoice(statsDirectory, gen, pokemon, move, pi1, mi1, opponentPassFilter, sampleSizeToReach);
 	}
 }
 
@@ -302,10 +313,10 @@ function validateTargetedWorkerMode(arg: string): TargetedWorkerMode {
 	throw new Error(`Unrecognized mode ${arg}`);
 }
 
-export function collectBattleDataMultiProcess() {
+export function collectBattleDataMultiProcess(gen: GenString) {
 	// Get a list of all pokemon/move combinations
 	const combos: [string, string][] = [];
-	for (const pokemon of gen1PokemonNames) {
+	for (const pokemon of getAllPokemonNames(gen)) {
 		for (const move of getLegalMovesFor(pokemon)) {
 			combos.push([pokemon, move]);
 		}
@@ -327,7 +338,7 @@ export function collectBattleDataMultiProcess() {
 
 		const [pokemon, move] = combos[nextIndexToTest];
 		nextIndexToTest++;
-		if (allBattleDataCollected("collectedStats", targetRuns, pokemon, move)) {
+		if (allBattleDataCollected("collectedStats", gen, targetRuns, pokemon, move)) {
 			console.log(`Skipping ${pokemon} with ${move}; already fully tested`);
 			// Make the file even if nothing changed, so enumerating movesets is easier for the analyzer
 			makeEmptyFileIfAbsent("collectedStats", pokemon, move);
@@ -361,7 +372,7 @@ export function collectBattleDataMultiProcess() {
 	spawnNextWorker();
 }
 
-export function singleChoiceRunner() {
+export function singleChoiceRunner(gen: GenString) {
 	const pokemon = process.env.CHOSEN_POKEMON;
 	if (pokemon === undefined) {
 		throw new Error("CHOSEN_POKEMON was not set");
@@ -378,24 +389,25 @@ export function singleChoiceRunner() {
 	if (targetRuns <= 0) {
 		throw new Error("TARGET_RUNS must be non-negative but was " + targetRuns + ", raw string was " + targetRunsString);
 	}
-	const pi1 = gen1PokemonNames.indexOf(pokemon);
+	const pi1 = allPokemonNamesAllGens.indexOf(pokemon);
 	const mi1 = getLegalMovesFor(pokemon).indexOf(move);
 	if (pi1 < 0 || mi1 < 0) {
 		throw new Error(`Something's wrong: ${pokemon}, ${move}, ${pi1}, ${mi1}`);
 	}
-	collectBattleDataForChoice("collectedStats", pokemon, move, pi1, mi1, (_p, _m) => true, targetRuns);
+	collectBattleDataForChoice("collectedStats", gen, pokemon, move, pi1, mi1, (_p, _m) => true, targetRuns);
 }
 
-function allBattleDataCollected(collectedStatsPath: string, targetRuns: number, pokemon1: string, move1: string, pi1?: number, mi1?: number): boolean {
+function allBattleDataCollected(collectedStatsPath: string, gen: GenString, targetRuns: number, pokemon1: string, move1: string, pi1?: number, mi1?: number): boolean {
+	const allPokemonNames = getAllPokemonNames(gen);
 	if (pi1 === undefined) {
-		pi1 = gen1PokemonNames.indexOf(pokemon1);
+		pi1 = allPokemonNames.indexOf(pokemon1);
 	}
 	if (mi1 === undefined) {
 		mi1 = getLegalMovesFor(pokemon1).indexOf(move1);
 	}
 	const winCountsByOpponent = loadExistingWinCountsByOpponent(collectedStatsPath, pokemon1, move1);
-	for (let pi2 = pi1; pi2 < gen1PokemonNames.length; pi2++) {
-		const pokemon2 = gen1PokemonNames[pi2];
+	for (let pi2 = pi1; pi2 < allPokemonNames.length; pi2++) {
+		const pokemon2 = allPokemonNames[pi2];
 		const moves2 = getLegalMovesFor(pokemon2);
 		const movesStartingPoint: number = (pi1 === pi2) ? mi1 + 1 : 0;
 		let anythingChanged = false;
@@ -456,12 +468,12 @@ opomsOfInterest.add("snorlax bodyslam");
 opomsOfInterest.add("vaporeon hydropump");
 
 
-function collectBattleDataForChoice(collectedStatsPath: string, pokemon1: string, move1: string, pi1: number, mi1: number,
-	opponentsPassFilter: (p2: string, m2: string) => boolean,
-	targetRuns: number) {
+function collectBattleDataForChoice(collectedStatsPath: string, gen: GenString, pokemon1: string, move1: string, pi1: number, mi1: number,
+		opponentsPassFilter: (p2: string, m2: string) => boolean, targetRuns: number) {
+	const allPokemonNames = getAllPokemonNames(gen);
 	const winCountsByOpponent = loadExistingWinCountsByOpponent(collectedStatsPath, pokemon1, move1);
-	for (let pi2 = pi1; pi2 < gen1PokemonNames.length; pi2++) {
-		const pokemon2 = gen1PokemonNames[pi2];
+	for (let pi2 = pi1; pi2 < allPokemonNames.length; pi2++) {
+		const pokemon2 = allPokemonNames[pi2];
 		const moves2 = getLegalMovesFor(pokemon2);
 		const movesStartingPoint = pi1 === pi2 ? mi1 + 1 : 0;
 		let anythingChanged = false;
@@ -558,8 +570,11 @@ export interface TargetedCollectorArgs {
 
 export type MatchupWithTarget = [left: string, right: string, target: number];
 
+export type GenString = "gen1";
+
 export function runTargetedCollection(args: TargetedCollectorArgs) {
-	if (args.gen !== 1) {
+	const gen: GenString | undefined = (args.gen === 1) ? "gen1" : undefined;
+	if (gen === undefined) {
 		throw new Error(`Generation ${args.gen} not supported`);
 	}
 
@@ -567,7 +582,7 @@ export function runTargetedCollection(args: TargetedCollectorArgs) {
 		if (args.extraArgs.length !== 0) {
 			throw new Error(`Expected zero extra args when using single_elim`);
 		}
-		const winner = getSingleElimTournamentWinner();
+		const winner = getSingleElimTournamentWinner(gen);
 		console.log(`winner: ${winner[0]}_${winner[1]}`);
 	} else if (args.type === "collect_stats") {
 		if (args.extraArgs.length !== 4) {
@@ -578,7 +593,7 @@ export function runTargetedCollection(args: TargetedCollectorArgs) {
 		const mode = validateTargetedWorkerMode(args.extraArgs[2]);
 		const sampleSizeToReach = Number.parseInt(args.extraArgs[3]);
 
-		collectTargeted(statsDir, combatants, mode, sampleSizeToReach);
+		collectTargeted(statsDir, gen, combatants, mode, sampleSizeToReach);
 	} else if (args.type === "specific_matchups") {
 		if (args.extraArgs.length !== 2) {
 			throw new Error(`Expected two extra args when using collect_stats`);
@@ -586,7 +601,7 @@ export function runTargetedCollection(args: TargetedCollectorArgs) {
 		const statsDir = args.extraArgs[0];
 		const matchupsWithTargets = JSON.parse(args.extraArgs[1]) as MatchupWithTarget[];
 
-		collectSpecificMatchups(statsDir, matchupsWithTargets);
+		collectSpecificMatchups(statsDir, gen, matchupsWithTargets);
 	} else {
 		throw new Error(`Unexpected type ${args.type}`);
 	}
@@ -596,8 +611,8 @@ function assertNever(input: never): never {
 	throw new Error(`Expected to never get here, but input was ${input}`);
 }
 
-function getSingleElimTournamentWinner(): Combatant {
-	const allCombatants = listAllCombatants();
+function getSingleElimTournamentWinner(gen: GenString): Combatant {
+	const allCombatants = listAllCombatants(gen);
 	let curRound = [...allCombatants];
 	shuffle(curRound);
 	while (curRound.length > 1) {
@@ -633,9 +648,9 @@ function getSingleElimTournamentWinner(): Combatant {
 }
 
 type Combatant = [pokemon: string, move: string];
-function listAllCombatants(): Combatant[] {
+function listAllCombatants(gen: GenString): Combatant[] {
 	const result: Combatant[] = [];
-	for (const pokemon of gen1PokemonNames) {
+	for (const pokemon of getAllPokemonNames(gen)) {
 		for (const move of getLegalMovesFor(pokemon)) {
 			result.push([pokemon, move]);
 		}

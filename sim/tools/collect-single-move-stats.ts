@@ -1,3 +1,3 @@
 import { collectBattleDataMultiProcess } from "./pickrandom";
 
-collectBattleDataMultiProcess();
+collectBattleDataMultiProcess("gen1");

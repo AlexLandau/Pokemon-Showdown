@@ -1,3 +1,3 @@
 import { singleChoiceRunner } from "./pickrandom";
 
-singleChoiceRunner();
+singleChoiceRunner("gen1");
