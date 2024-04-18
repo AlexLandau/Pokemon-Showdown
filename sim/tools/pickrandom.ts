@@ -7,19 +7,25 @@ import * as fs from "fs";
 // TODO: Case to look into: Venusaur with Solarbeam losing to Jigglypuff with Disable
 
 const gen1Dex: ModdedDex = Dex.mod("gen1");
+const gen2Dex: ModdedDex = Dex.mod("gen2");
 
 function getDex(gen: GenString): ModdedDex {
 	if (gen === "gen1") {
 		return gen1Dex;
+	} else if (gen === "gen2_no_items") {
+		return gen2Dex;
 	} else {
 		assertNever(gen);
 	}
 }
 
 const gen1PokemonNames = Object.keys(gen1Dex.data.Pokedex).slice(1, 152);
+const gen2PokemonNames = Object.keys(gen2Dex.data.Pokedex).slice(1, 252);
 function getAllPokemonNames(gen: GenString): string[] {
 	if (gen === "gen1") {
 		return gen1PokemonNames;
+	} else if (gen === "gen2_no_items") {
+		return gen2PokemonNames;
 	} else {
 		assertNever(gen);
 	}
@@ -93,6 +99,15 @@ export function getBattleWinner(pokemon1: string, move1: string, pokemon2: strin
 		const moddedDex = Dex.forFormat("[Gen 1] Custom Game");
 		battleOptions = {
 			formatid: moddedDex.toID("[Gen 1] Custom Game"),
+			p1: {name: "p1", team: [pset1]},
+			p2: {name: "p2", team: [pset2]},
+			strictChoices: true
+		};
+	} else if (gen === "gen2_no_items") {
+		Dex.mod("gen2"); // THIS HAS SIDE EFFECTS, DO NOT REMOVE
+		const moddedDex = Dex.forFormat("[Gen 2] Custom Game");
+		battleOptions = {
+			formatid: moddedDex.toID("[Gen 2] Custom Game"),
 			p1: {name: "p1", team: [pset1]},
 			p2: {name: "p2", team: [pset2]},
 			strictChoices: true
@@ -382,20 +397,20 @@ function writeToFile(collectedStatsPath: string, pokemon: string, move: string, 
 }
 
 export interface TargetedCollectorArgs {
-	gen: number;
+	gen: string;
 	type: string;
 	extraArgs: string[];
 }
 
 export type MatchupWithTarget = [left: string, right: string, target: number];
 
-export type GenString = "gen1";
+export type GenString = "gen1" | "gen2_no_items";
 
 export function runTargetedCollection(args: TargetedCollectorArgs) {
-	const gen: GenString | undefined = (args.gen === 1) ? "gen1" : undefined;
-	if (gen === undefined) {
+	if (args.gen !== "gen1" && args.gen !== "gen2_no_items") {
 		throw new Error(`Generation ${args.gen} not supported`);
 	}
+	const gen: GenString = args.gen;
 
 	if (args.type === "single_elim") {
 		if (args.extraArgs.length !== 0) {
