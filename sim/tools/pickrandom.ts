@@ -8,13 +8,6 @@ import * as fs from "fs";
 
 const md: ModdedDex = Dex.mod("gen1");
 const pd = md.data.Pokedex;
-// console.log("pd keys: " + Object.keys(pd));
-// console.log("bulba: " + Object.keys(pd.bulbasaur));
-// console.log("bulba: " + JSON.stringify(pd.mewtwo));
-// console.log("bulba learnset: " + JSON.stringify(md.data.Learnsets.bulbasaur));
-// console.log("pd 1: " + Object.keys(pd[1]));
-// console.log("bulba: " + Object.keys(pd.bulbasaur));
-// Dex.forFormat("gen1customgame");
 
 const gen1PokemonNames = Object.keys(pd).slice(1, 152);
 function getAllPokemonNames(gen: GenString): string[] {
@@ -26,9 +19,6 @@ function getAllPokemonNames(gen: GenString): string[] {
 }
 
 const allPokemonNamesAllGens = Object.keys(pd);
-
-// console.log(JSON.stringify(somePokemonNames));
-// console.log(somePokemonNames.length);
 
 function getRandomInt(min: number, max: number) {
 	min = Math.ceil(min);
@@ -57,23 +47,6 @@ function getLegalMovesFor(pokemonName: string): string[] {
 	}
 	return Array.from(moves).sort();
 }
-
-// const pokemonIndex = getRandomInt(0, 151);
-// const pokemonName = somePokemonNames[pokemonIndex];
-// console.log(`Chose #${pokemonIndex + 1} ${pokemonName}`);
-// console.log("pd info: " + JSON.stringify(pd[pokemonName]));
-// console.log("learnset: " + JSON.stringify(md.data.Learnsets[pokemonName].learnset));
-// const learnset = md.data.Learnsets[pokemonName].learnset;
-// const eligibleMoves = Object.keys(learnset).filter(moveName => learnset[moveName].find(moveSource => moveSource.startsWith("1")) != undefined);
-// console.log("eligible moves: " + JSON.stringify(eligibleMoves));
-// const randomMove = eligibleMoves[getRandomInt(0, eligibleMoves.length)];
-// console.log("Randomly chosen move: " + randomMove);
-
-// for (let i = 0; i < 10; i++) {
-// 	const p = pickRandomPokemon();
-// 	const m = pickRandomMove(p);
-// 	console.log(`Chose ${p} with ${m}`);
-// }
 
 // Next step is to figure out how to pit a couple of Pokemon together in a battle...
 const perfectEvs: StatsTable = {hp: 255, atk: 255, def: 255, spe: 255, spa: 255, spd: 255};
@@ -147,22 +120,6 @@ export function getBattleWinner(pokemon1: string, move1: string, pokemon2: strin
 	throw new Error(`Unexpected winner value '${winner}'`);
 }
 
-
-// TODO: Use workers (or multiple processes, which looks pretty similar)
-// export function collectBattleData() {
-// 	const targetRuns = 10;
-// 	for (let pi1 = 0; pi1 < gen1PokemonNames.length; pi1++) {
-// 		const pokemon1 = gen1PokemonNames[pi1];
-// 		const moves1 = getLegalMovesFor(pokemon1);
-// 		for (let mi1 = 0; mi1 < moves1.length; mi1++) {
-// 			const move1 = moves1[mi1];
-// 			if (allBattleDataCollected("collectedStats", targetRuns, pokemon1, move1, pi1, mi1)) {
-// 				console.log(`Skipping ${pokemon1} with ${move1}, all data collected`);
-// 			}
-// 			collectBattleDataForChoice("collectedStats", pokemon1, move1, pi1, mi1, (_p, _m) => true, targetRuns);
-// 		}
-// 	}
-// }
 
 const NUM_WORKERS_FOR_TARGETED = 8;
 function collectTargeted(statsDirectory: string, gen: GenString, combatants: string[], mode: TargetedWorkerMode, sampleSizeToReach: number) {
@@ -312,161 +269,6 @@ function validateTargetedWorkerMode(arg: string): TargetedWorkerMode {
 	}
 	throw new Error(`Unrecognized mode ${arg}`);
 }
-
-export function collectBattleDataMultiProcess(gen: GenString) {
-	// Get a list of all pokemon/move combinations
-	const combos: [string, string][] = [];
-	for (const pokemon of getAllPokemonNames(gen)) {
-		for (const move of getLegalMovesFor(pokemon)) {
-			combos.push([pokemon, move]);
-		}
-	}
-	console.log(`Number of combinations: ${combos.length}`);
-
-	const NUM_WORKERS: number = process.env.NUM_WORKERS ? parseInt(process.env.NUM_WORKERS) : 2;
-	const targetRuns = 175;
-
-	let spareThreads: number = NUM_WORKERS;
-	let nextIndexToTest: number = 0;
-	function spawnNextWorker() {
-		if (spareThreads <= 0) {
-			return;
-		}
-		if (nextIndexToTest >= combos.length) {
-			return;
-		}
-
-		const [pokemon, move] = combos[nextIndexToTest];
-		nextIndexToTest++;
-		if (allBattleDataCollected("collectedStats", gen, targetRuns, pokemon, move)) {
-			console.log(`Skipping ${pokemon} with ${move}; already fully tested`);
-			// Make the file even if nothing changed, so enumerating movesets is easier for the analyzer
-			makeEmptyFileIfAbsent("collectedStats", pokemon, move);
-
-			setTimeout(spawnNextWorker, 0);
-			return;
-		}
-
-		console.log(`Starting a process for ${pokemon} with ${move}`)
-		spareThreads--;
-		child_process.execFile("node", ["dist/sim/tools/single-stat-collector.js"], {
-			maxBuffer: 50 * 1024 * 1024,
-			env: { ...process.env,
-				CHOSEN_POKEMON: pokemon,
-				CHOSEN_MOVE: move,
-				TARGET_RUNS: "" + targetRuns,
-				}
-		}, (error, stdout, stderr) => {
-			console.log(`Finished the process for ${pokemon} with ${move}`);
-			// console.log(stdout);
-			if (error) {
-				console.log("There was an error: ", error);
-				throw error;
-			}
-			spareThreads++;
-			setTimeout(spawnNextWorker, 0);
-		});
-		setTimeout(spawnNextWorker, 0);
-	}
-
-	spawnNextWorker();
-}
-
-export function singleChoiceRunner(gen: GenString) {
-	const pokemon = process.env.CHOSEN_POKEMON;
-	if (pokemon === undefined) {
-		throw new Error("CHOSEN_POKEMON was not set");
-	}
-	const move = process.env.CHOSEN_MOVE;
-	if (move === undefined) {
-		throw new Error("CHOSEN_MOVE was not set");
-	}
-	const targetRunsString = process.env.TARGET_RUNS;
-	if (targetRunsString === undefined) {
-		throw new Error("TARGET_RUNS was not set");
-	}
-	const targetRuns = Number.parseInt(targetRunsString);
-	if (targetRuns <= 0) {
-		throw new Error("TARGET_RUNS must be non-negative but was " + targetRuns + ", raw string was " + targetRunsString);
-	}
-	const pi1 = allPokemonNamesAllGens.indexOf(pokemon);
-	const mi1 = getLegalMovesFor(pokemon).indexOf(move);
-	if (pi1 < 0 || mi1 < 0) {
-		throw new Error(`Something's wrong: ${pokemon}, ${move}, ${pi1}, ${mi1}`);
-	}
-	collectBattleDataForChoice("collectedStats", gen, pokemon, move, pi1, mi1, (_p, _m) => true, targetRuns);
-}
-
-function allBattleDataCollected(collectedStatsPath: string, gen: GenString, targetRuns: number, pokemon1: string, move1: string, pi1?: number, mi1?: number): boolean {
-	const allPokemonNames = getAllPokemonNames(gen);
-	if (pi1 === undefined) {
-		pi1 = allPokemonNames.indexOf(pokemon1);
-	}
-	if (mi1 === undefined) {
-		mi1 = getLegalMovesFor(pokemon1).indexOf(move1);
-	}
-	const winCountsByOpponent = loadExistingWinCountsByOpponent(collectedStatsPath, pokemon1, move1);
-	for (let pi2 = pi1; pi2 < allPokemonNames.length; pi2++) {
-		const pokemon2 = allPokemonNames[pi2];
-		const moves2 = getLegalMovesFor(pokemon2);
-		const movesStartingPoint: number = (pi1 === pi2) ? mi1 + 1 : 0;
-		let anythingChanged = false;
-		for (let mi2 = movesStartingPoint; mi2 < moves2.length; mi2++) {
-			const move2 = moves2[mi2];
-
-			const oppId = pokemon2 + "_" + move2;
-			const winCounts: WinCounts = oppId in winCountsByOpponent ? winCountsByOpponent[oppId] : {p1: 0, p2: 0, dnf: 0};
-			const alreadyRunCount = winCounts.p1 + winCounts.p2 + winCounts.dnf;
-			if (alreadyRunCount < targetRuns) {
-				return false;
-			}
-		}
-	}
-	return true;
-}
-
-const opomsOfInterest = new Set<string>();
-opomsOfInterest.add("chansey bide");
-opomsOfInterest.add("chansey icebeam");
-opomsOfInterest.add("chansey rest");
-opomsOfInterest.add("chansey seismictoss");
-opomsOfInterest.add("cloyster clamp");
-opomsOfInterest.add("cloyster toxic");
-opomsOfInterest.add("dewgong toxic");
-opomsOfInterest.add("gastly toxic");
-opomsOfInterest.add("gengar toxic");
-opomsOfInterest.add("golem dig");
-opomsOfInterest.add("golem toxic");
-opomsOfInterest.add("haunter toxic");
-opomsOfInterest.add("kabutops slash");
-opomsOfInterest.add("lapras bide");
-opomsOfInterest.add("lapras icebeam");
-opomsOfInterest.add("lapras toxic");
-opomsOfInterest.add("mewtwo bide");
-opomsOfInterest.add("mewtwo blizzard");
-opomsOfInterest.add("mewtwo bodyslam");
-opomsOfInterest.add("mewtwo fireblast");
-opomsOfInterest.add("mewtwo icebeam");
-opomsOfInterest.add("mewtwo psychic");
-opomsOfInterest.add("mewtwo recover");
-opomsOfInterest.add("mewtwo rest");
-opomsOfInterest.add("mewtwo seismictoss");
-opomsOfInterest.add("mewtwo thunderbolt");
-opomsOfInterest.add("moltres fireblast");
-opomsOfInterest.add("omastar hydropump");
-opomsOfInterest.add("omastar icebeam");
-opomsOfInterest.add("omastar surf");
-opomsOfInterest.add("omastar toxic");
-opomsOfInterest.add("onix toxic");
-opomsOfInterest.add("rhydon dig");
-opomsOfInterest.add("rhydon earthquake");
-opomsOfInterest.add("rhydon seismictoss");
-opomsOfInterest.add("rhydon toxic");
-opomsOfInterest.add("tentacruel hydropump");
-opomsOfInterest.add("snorlax bide");
-opomsOfInterest.add("snorlax bodyslam");
-opomsOfInterest.add("vaporeon hydropump");
-
 
 function collectBattleDataForChoice(collectedStatsPath: string, gen: GenString, pokemon1: string, move1: string, pi1: number, mi1: number,
 		opponentsPassFilter: (p2: string, m2: string) => boolean, targetRuns: number) {
