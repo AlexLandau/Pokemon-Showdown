@@ -19,12 +19,36 @@ function getDex(gen: GenString): ModdedDex {
 	}
 }
 
-const gen1PokemonNames = Object.keys(gen1Dex.data.Pokedex).slice(1, 152);
-const gen2PokemonNames = Object.keys(gen2Dex.data.Pokedex).slice(1, 252);
+function generatePokemonNames(dex: ModdedDex, maxPokemonNum: number): string[] {
+	const filteredData = [] as SpeciesData[];
+	for (const data of Object.values(dex.data.Pokedex)) {
+		if (data.num > 0 && data.num <= maxPokemonNum) {
+			// TODO: Handle forms vs. generations?
+			if (data.forme == undefined) {
+				filteredData.push(data);
+			}
+		}
+	}
+	filteredData.sort((left, right) => {
+		const comp1 = left.num - right.num;
+		if (comp1 < 0) {
+			return -1;
+		} else if (comp1 > 0) {
+			return 1;
+		}
+		return left.name.localeCompare(right.name, "en-US")
+	});
+	return filteredData.map(data => dex.toID(data.name));
+}
+const gen1PokemonNames = generatePokemonNames(gen1Dex, 151);
+const gen2PokemonNames = generatePokemonNames(gen2Dex, 251);
 function getAllPokemonNames(gen: GenString): string[] {
 	if (gen === "gen1") {
 		return gen1PokemonNames;
 	} else if (gen === "gen2_no_items") {
+		// console.log("gen2 names: ", gen2PokemonNames.slice(0, 100));
+		// console.log("gen2 names: ", gen2PokemonNames.slice(100, 200));
+		// console.log("gen2 names: ", gen2PokemonNames.slice(200, undefined));
 		return gen2PokemonNames;
 	} else {
 		assertNever(gen);
@@ -42,11 +66,19 @@ function getLegalMovesFor(pokemonName: string, gen: GenString): string[] {
 	const dex = getDex(gen);
 	// console.log("mon is ", pokemonName);
 	const learnset = dex.data.Learnsets[pokemonName].learnset;
-	// console.log("learnset is ", learnset);
 	// md.data.Learnsets[pokemonName].learnset;
 	const moves: Set<string> = new Set();
 	for (const moveName in learnset) {
-		if (learnset[moveName].find(moveSource => moveSource.startsWith("1")) != undefined) {
+		if (learnset[moveName].find(moveSource => {
+			const genLearned = Number.parseInt(moveSource[0]);
+			if (gen === "gen1") {
+				return genLearned <= 1;
+			} else if (gen === "gen2_no_items") {
+				return genLearned <= 2;
+			} else {
+				assertNever(gen);
+			}
+		}) != undefined) {
 			moves.add(moveName);
 		}
 	}
@@ -485,7 +517,9 @@ type Combatant = [pokemon: string, move: string];
 function listAllCombatants(gen: GenString): Combatant[] {
 	const result: Combatant[] = [];
 	for (const pokemon of getAllPokemonNames(gen)) {
-		for (const move of getLegalMovesFor(pokemon, gen)) {
+		const legalMoves = getLegalMovesFor(pokemon, gen);
+		// console.log(pokemon, " has ", legalMoves.length, " legal moves");
+		for (const move of legalMoves) {
 			result.push([pokemon, move]);
 		}
 	}
