@@ -62,8 +62,20 @@ function getRandomInt(min: number, max: number) {
 }
 
 // TODO: Maybe profile to see if this is worth caching
-function getLegalMovesFor(pokemonName: string, gen: GenString): string[] {
+export function getLegalMovesFor(pokemonName: string, gen: GenString): string[] {
 	const dex = getDex(gen);
+	if (pokemonName === "smeargle") {
+		const allMoves = new Set<string>();
+		for (const pokemonName of getAllPokemonNames(gen)) {
+			if (pokemonName === "smeargle") {
+				continue;
+			}
+			for (const move of getLegalMovesFor(pokemonName, gen)) {
+				allMoves.add(move);
+			}
+		}
+		return Array.from(allMoves).sort();
+	}
 	// console.log("mon is ", pokemonName);
 	const learnset = dex.data.Learnsets[pokemonName].learnset;
 	// md.data.Learnsets[pokemonName].learnset;
@@ -89,7 +101,79 @@ function getLegalMovesFor(pokemonName: string, gen: GenString): string[] {
 			moves.add(prevoMove);
 		}
 	}
+	if (moves.has("hiddenpower")) {
+		moves.add("hiddenpower$fighting");
+		moves.add("hiddenpower$flying");
+		moves.add("hiddenpower$poison");
+		moves.add("hiddenpower$ground");
+		moves.add("hiddenpower$rock");
+		moves.add("hiddenpower$bug");
+		moves.add("hiddenpower$ghost");
+		moves.add("hiddenpower$steel");
+		moves.add("hiddenpower$fire");
+		moves.add("hiddenpower$water");
+		moves.add("hiddenpower$grass");
+		moves.add("hiddenpower$electric");
+		moves.add("hiddenpower$psychic");
+		moves.add("hiddenpower$ice");
+		moves.add("hiddenpower$dragon");
+		moves.add("hiddenpower$dark");
+		moves.delete("hiddenpower");
+	}
 	return Array.from(moves).sort();
+}
+
+// 0 	 Fighting 
+// 1 	 Flying 
+// 2 	 Poison 
+// 3 	 Ground 
+// 4 	 Rock 
+// 5 	 Bug 
+// 6 	 Ghost 
+// 7 	 Steel 
+// 8 	 Fire 
+// 9 	 Water 
+// 10 	 Grass 
+// 11 	 Electric 
+// 12 	 Psychic 
+// 13 	 Ice 
+// 14 	 Dragon 
+// 15 	 Dark 
+function getHiddenPowerModifierGen2(moveName: string): {atk: number, def: number} {
+	if (moveName === "hiddenpower$fighting") {
+		return { atk: 24, def: 24 };
+	} else if (moveName === "hiddenpower$flying") {
+		return { atk: 24, def: 26 };
+	} else if (moveName === "hiddenpower$poison") {
+		return { atk: 24, def: 28 };
+	} else if (moveName === "hiddenpower$ground") {
+		return { atk: 24, def: 30 };
+	} else if (moveName === "hiddenpower$rock") {
+		return { atk: 26, def: 24 };
+	} else if (moveName === "hiddenpower$bug") {
+		return { atk: 26, def: 26 };
+	} else if (moveName === "hiddenpower$ghost") {
+		return { atk: 26, def: 28 };
+	} else if (moveName === "hiddenpower$steel") {
+		return { atk: 26, def: 30 };
+	} else if (moveName === "hiddenpower$fire") {
+		return { atk: 28, def: 24 };
+	} else if (moveName === "hiddenpower$water") {
+		return { atk: 28, def: 26 };
+	} else if (moveName === "hiddenpower$grass") {
+		return { atk: 28, def: 28 };
+	} else if (moveName === "hiddenpower$electric") {
+		return { atk: 28, def: 30 };
+	} else if (moveName === "hiddenpower$psychic") {
+		return { atk: 30, def: 24 };
+	} else if (moveName === "hiddenpower$ice") {
+		return { atk: 30, def: 26 };
+	} else if (moveName === "hiddenpower$dragon") {
+		return { atk: 30, def: 28 };
+	} else if (moveName === "hiddenpower$dark") {
+		return { atk: 30, def: 30 };
+	}
+	throw new Error(`Unrecognized hidden power move ${moveName}`);
 }
 
 // Next step is to figure out how to pit a couple of Pokemon together in a battle...
@@ -97,6 +181,18 @@ const perfectEvs: StatsTable = {hp: 255, atk: 255, def: 255, spe: 255, spa: 255,
 // 30 is perfect for gen 1, 31 for later gens
 const perfectIvs: StatsTable = {hp: 30, atk: 30, def: 30, spe: 30, spa: 30, spd: 30};
 
+function getIvs(pokemon1: string, move: string, gen: GenString): StatsTable {
+	if (move.startsWith("hiddenpower")) {
+		if (gen === "gen1") {
+			throw new Error("Can't have Hidden Power in gen 1");
+		} else if (gen === "gen2_no_items") {
+			return {...perfectIvs, ...getHiddenPowerModifierGen2(move)};
+		} else {
+			assertNever(gen);
+		}
+	}
+	return perfectIvs;
+}
 
 export function getBattleWinner(pokemon1: string, move1: string, pokemon2: string, move2: string, gen: GenString): "p1" | "p2" | "dnf" {
 	const pset1: PokemonSet = {
@@ -108,7 +204,7 @@ export function getBattleWinner(pokemon1: string, move1: string, pokemon2: strin
 		nature: "",
 		gender: "",
 		evs: perfectEvs,
-		ivs: perfectIvs,
+		ivs: getIvs(pokemon1, move1, gen),
 		level: 100
 	};
 
@@ -121,7 +217,7 @@ export function getBattleWinner(pokemon1: string, move1: string, pokemon2: strin
 		nature: "",
 		gender: "",
 		evs: perfectEvs,
-		ivs: perfectIvs,
+		ivs: getIvs(pokemon2, move2, gen),
 		level: 100
 	};
 
