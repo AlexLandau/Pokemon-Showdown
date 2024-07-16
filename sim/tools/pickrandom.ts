@@ -74,6 +74,7 @@ export function getLegalMovesFor(pokemonName: string, gen: GenString): string[] 
 				allMoves.add(move);
 			}
 		}
+		allMoves.add("sketch");
 		return Array.from(allMoves).sort();
 	}
 	// console.log("mon is ", pokemonName);
@@ -176,6 +177,13 @@ function getHiddenPowerModifierGen2(moveName: string): {atk: number, def: number
 	throw new Error(`Unrecognized hidden power move ${moveName}`);
 }
 
+function normalizeMoveName(moveName: string): string {
+	if (moveName.startsWith("hiddenpower$")) {
+		return "hiddenpower";
+	}
+	return moveName;
+}
+
 // Next step is to figure out how to pit a couple of Pokemon together in a battle...
 const perfectEvs: StatsTable = {hp: 255, atk: 255, def: 255, spe: 255, spa: 255, spd: 255};
 // 30 is perfect for gen 1, 31 for later gens
@@ -200,7 +208,7 @@ export function getBattleWinner(pokemon1: string, move1: string, pokemon2: strin
 		species: pokemon1,
 		item: "",
 		ability: "",
-		moves: [move1],
+		moves: [normalizeMoveName(move1)],
 		nature: "",
 		gender: "",
 		evs: perfectEvs,
@@ -213,7 +221,7 @@ export function getBattleWinner(pokemon1: string, move1: string, pokemon2: strin
 		species: pokemon2,
 		item: "",
 		ability: "",
-		moves: [move2],
+		moves: [normalizeMoveName(move2)],
 		nature: "",
 		gender: "",
 		evs: perfectEvs,
